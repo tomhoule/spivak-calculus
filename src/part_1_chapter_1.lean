@@ -1,18 +1,18 @@
-namespace properties
-    open int
+import data.rat.basic
 
-    variables (a b c x : ℤ)
+namespace properties
+    variables (a b c x : ℚ)
 
     -- P1
-    def add_assoc : a + (b + c) = (a + b) + c := by rw [@int.add_assoc a b c]
+    def add_assoc : a + (b + c) = (a + b) + c := by rw [add_assoc a b c]
 
     -- P2
-    def add_zero : a + 0 = a := @int.add_zero a
-    def zero_add : 0 + a = a := @int.zero_add a
+    def add_zero : a + 0 = a := add_zero a
+    def zero_add : 0 + a = a := zero_add a
 
     -- P3
-    def add_opp : a + (-a) = 0 := by rw [@int.add_comm, @int.add_left_neg a]
-    def opp_add : (-a) + a = 0 := @int.add_left_neg a
+    def add_opp : a + (-a) = 0 := by rw [add_comm, add_left_neg a]
+    def opp_add : (-a) + a = 0 := add_left_neg a
 
     example : (a + x = a) → x = 0 :=
     assume h,
@@ -26,14 +26,13 @@ namespace properties
     example : (x + 3 = 5) → (x = 2) :=
     assume h,
     calc
-        x   = x + 0 : by rw add_zero
+        x   = x + (0) : by rw add_zero
         ... = x + (3 + -3) : by rw add_opp
-        ... = 5 + (-3) : by rw [add_assoc, h]
-        ... = 5 - 3 : rfl
+        ... = 5 + -3 : by rw [add_assoc, h]
         ... = 2 : by reflexivity
 
     -- P4
-    def add_comm : a + b = b + a := @int.add_comm a b
+    def add_comm : a + b = b + a := add_comm a b
 
 
 
