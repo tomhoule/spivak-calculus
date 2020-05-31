@@ -1,7 +1,10 @@
 import data.rat.basic
+import algebra.field
 
 namespace properties
-    variables (a b c x : ℚ)
+    variables (α : Type) [field α]
+    variables (a b c : α)
+    variables (x : ℚ)
 
     -- P1
     def add_assoc : a + (b + c) = (a + b) + c := by rw [add_assoc a b c]
@@ -14,12 +17,12 @@ namespace properties
     def add_opp : a + (-a) = 0 := by rw [add_comm, add_left_neg a]
     def opp_add : (-a) + a = 0 := add_left_neg a
 
-    example : (a + x = a) → x = 0 :=
+    example : (a + b = a) → b = (0 : α) :=
     assume h,
     calc
-        x = 0 + x : by rw zero_add
-            ... = (-a + a) + x : by rw opp_add
-            ... = -a + (a + x) : by rw add_assoc
+        b = 0 + b : by rw zero_add
+            ... = (-a + a) + b : by rw opp_add
+            ... = -a + (a + b) : by rw add_assoc
             ... = -a + a : by rw h
             ... = 0 : by rw opp_add
 
@@ -33,7 +36,5 @@ namespace properties
 
     -- P4
     def add_comm : a + b = b + a := add_comm a b
-
-
 
 end properties
