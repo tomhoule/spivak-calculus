@@ -125,4 +125,19 @@ namespace properties
     ),
     show a * 0 = 0, from add_b_eq_self α (a * 0) (a * 0) (eq.symm this)
 
+    def neg_mul_distrib : (-a) * b = -(a * b) :=
+    have (-a) * b + a * b = 0, from (
+        calc
+        (-a) * b + a * b    = b * (-a) + b * a : by rw [mul_comm' α (-a) b, mul_comm' α a b]
+                        ... = b * (-a + a) : by rw [←mul_distrib']
+                        ... = b * 0 : by rw opp_add
+                        ... = 0 : by rw mul_zero'
+    ),
+    eq.symm $ calc
+        -(a * b)    = -(a * b) + 0 : by rw add_zero
+                ... = -(a * b) + ((-a) * b + a * b) : by rw this
+                ... = -(a * b) + a * b + ((-a) * b) : by simp
+                ... = 0 + (-a) * b : by rw opp_add
+                ... = (-a) * b : by rw zero_add
+
 end properties
