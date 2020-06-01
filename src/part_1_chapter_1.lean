@@ -140,6 +140,12 @@ namespace properties
                 ... = 0 + (-a) * b : by rw opp_add
                 ... = (-a) * b : by rw zero_add
 
+    example : -1 * a = -a :=
+    calc
+    -1 * a  = -(1 * a) : by rw neg_mul_distrib
+        ... = -a : by rw [one_mul']
+
+
     def neg_mul_neg_eq_pos_mul_pos : (-a) * (-b) = a * b :=
     have (-a) * (-b) + -(a * b) = 0, from (
         calc
@@ -154,5 +160,33 @@ namespace properties
         ... = (a * b) + -(a * b) + (-a * -b) : by simp
         ... = 0 + -a * -b : by rw add_opp
         ... = (-a) * (-b) : by rw zero_add
+
+    example : ∀ (x : α),  (x^2) - (3 * x) + 2 = (x - 1) * (x - 2) :=
+    λ x,
+    calc
+    (x^2) - (3*x) + 2   = (x * x) - (3*x) + 2 : by rw [pow_succ, pow_one]
+                    ... = (x * x) + -(3 * x) + 2 : by refl
+                    ... = (x * x) + (-3 * x) + 2 : by rw [←(neg_mul_distrib α 3 x)]
+                    ... = (x * x) + (-(2 + 1) * x) + 2 : by refl
+                    ... = (x * x) + ((-2 + -1) * x) + 2 : by rw [neg_add]
+                    ... = (x * x) + (x * (-2 + -1)) + 2 : by rw [mul_comm' α (-2 + -1) x]
+                    ... = (x * x) + ((x * -2) + (x * -1)) + 2 : by rw [mul_distrib']
+                    ... = (x * x) + ((x * -2) + (x * -1) + 2) : by rw [add_assoc]
+                    ... = (x * x) + ((x * -2) + (x * -1) + (1 * 2)) : by rw [one_mul]
+                    ... = (x * x) + ((x * -2) + (x * -1) + (-1 * -2)) : by rw [neg_mul_neg_eq_pos_mul_pos]
+                    ... = (x * x) + ((x * -2) + (-1 * x) + (-1 * -2)) : by rw [mul_comm' α x (-1)]
+                    ... = (x * x) + ((x * -2) + (((-1) * x) + ((-1) * (-2)))) : by rw [add_assoc' α (x * -2)]
+                    ... = (x * x) + ((x * -2) + (-1 * (x + -2))) : by rw mul_distrib'
+                    ... = (x * x) + ((x * -2) + -(x + -2)) : by rw [neg_one_mul]
+                    ... = (x * x) + ((x * -2) + -(x - 2)) : by refl
+                    ... = (x * x) + (x * -2) + -(x - 2) : by rw [add_assoc']
+                    ... = (x * (x +- 2)) + -(x - 2) : by rw [mul_distrib']
+                    ... = (x * (x - 2)) + -(x - 2) : by refl
+                    ... = (x - 2) * x + -(x - 2) : by rw mul_comm'
+                    ... = (x - 2) * x + -1 * (x - 2) : by rw [neg_one_mul]
+                    ... = (x - 2) * x + (x - 2) * (- 1) : by rw [mul_comm' α (-1)]
+                    ... = (x - 2) * (x + -1) : by rw mul_distrib'
+                    ... = (x - 2) * (x - 1) : by refl
+                    ... = (x - 1) * (x - 2) : by rw mul_comm'
 
 end properties
