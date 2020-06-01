@@ -20,7 +20,7 @@ namespace properties
     def add_opp : a + (-a) = 0 := by rw [add_comm, add_left_neg a]
     def opp_add : (-a) + a = 0 := add_left_neg a
 
-    example : (a + b = a) → b = (0 : α) :=
+    def add_b_eq_self : (a + b = a) → b = (0 : α) :=
     assume h,
     calc
         b = 0 + b : by rw zero_add
@@ -71,7 +71,7 @@ namespace properties
         ... = (a⁻¹ * a) * b : by rw [inverse_mul α a hnzero]
         ... = a⁻¹ * (a * b) : by rw [mul_assoc']
         ... = a⁻¹ * 0 : by rw h
-        ... = 0 : by rw mul_zero
+        ... = 0 : by rw mul_zero -- mul_zero isn't defined yet! see page 7
 
     -- P9
     def mul_distrib' : a * (b + c) = (a * b) + (a * c) := mul_add a b c
@@ -116,5 +116,13 @@ namespace properties
         ... = b * (2 * 2⁻¹) : by rw [mul_comm' α 2 b, mul_assoc']
         ... = b * 1 : by rw [mul_inverse α 2 (two_is_not_zero α)]
         ... = b : by rw [mul_one]
+
+    def mul_zero' : a * 0 = 0 :=
+    have a * 0 = a * 0 + a * 0, from (
+        calc
+        a * 0   = a * (0 + 0) : by rw [zero_add']
+            ... = (a * 0) + (a * 0) : by rw [mul_distrib']
+    ),
+    show a * 0 = 0, from add_b_eq_self α (a * 0) (a * 0) (eq.symm this)
 
 end properties
