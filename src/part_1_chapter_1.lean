@@ -140,4 +140,19 @@ namespace properties
                 ... = 0 + (-a) * b : by rw opp_add
                 ... = (-a) * b : by rw zero_add
 
+    def neg_mul_neg_eq_pos_mul_pos : (-a) * (-b) = a * b :=
+    have (-a) * (-b) + -(a * b) = 0, from (
+        calc
+        (-a) * (-b) + -(a * b)  = (-a) * (-b) + (-a) * b : by rw ←neg_mul_distrib
+                            ... = -a * (-b + b) : by rw mul_distrib'
+                            ... = (-a) * 0 : by rw opp_add
+                            ... = 0 : by rw mul_zero'
+    ),
+    eq.symm $ calc
+    a * b   = a * b + 0 : by rw [add_zero]
+        ... = a * b + (-a * -b + -(a * b)) : by rw this
+        ... = (a * b) + -(a * b) + (-a * -b) : by simp
+        ... = 0 + -a * -b : by rw add_opp
+        ... = (-a) * (-b) : by rw zero_add
+
 end properties
