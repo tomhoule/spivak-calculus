@@ -1,6 +1,7 @@
 import data.rat.basic
 import algebra.field
 import algebra.ordered_field
+import algebra.order
 
 namespace properties
     open field
@@ -158,8 +159,7 @@ namespace properties
     a * b   = a * b + 0 : by rw [add_zero]
         ... = a * b + (-a * -b + -(a * b)) : by rw this
         ... = (a * b) + -(a * b) + (-a * -b) : by simp
-        ... = 0 + -a * -b : by rw add_opp
-        ... = (-a) * (-b) : by rw zero_add
+        ... = (-a) * (-b) : by rw [add_opp, zero_add]
 
     example : ∀ (x : α),  (x^2) - (3 * x) + 2 = (x - 1) * (x - 2) :=
     λ x,
@@ -188,5 +188,14 @@ namespace properties
                     ... = (x - 2) * (x + -1) : by rw mul_distrib'
                     ... = (x - 2) * (x - 1) : by refl
                     ... = (x - 1) * (x - 2) : by rw mul_comm'
+
+    -- P10
+    def trichotomy_law : a < 0 ∨ a = 0 ∨ 0 < a := lt_trichotomy a 0
+
+    -- P11 - closure under addition
+    def add_closure : 0 < a → 0 < b → 0 < (a + b) := assume hapos hbpos, add_pos hapos hbpos
+
+    -- P12 - closure under multiplication
+    def mul_closure : 0 < a → 0 < b → 0 < (a * b) := assume hapos hbpos, mul_pos hapos hbpos
 
 end properties
