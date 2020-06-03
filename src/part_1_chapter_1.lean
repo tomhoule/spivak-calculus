@@ -1,12 +1,13 @@
 import data.rat.basic
 import algebra.field
 import algebra.ordered_field
+import algebra.ordered_group
 import algebra.order
 
 namespace properties
     open field
 
-    variables (α : Type) [linear_ordered_field α]
+    variables (α : Type) [discrete_linear_ordered_field α]
     variables (a b c : α)
     variables (x : ℚ)
 
@@ -197,5 +198,81 @@ namespace properties
 
     -- P12 - closure under multiplication
     def mul_closure : 0 < a → 0 < b → 0 < (a * b) := assume hapos hbpos, mul_pos hapos hbpos
+
+    def P : set α := λ a, 0 < a
+
+    def a_b_trichotomy : a - b = 0 ∨ (a - b) ∈ (P α) ∨ b - a ∈ (P α) :=
+    or.elim (lt_trichotomy a b)
+        (λ haltb,
+            have 0 < b - a, from (iff.elim_right sub_pos) haltb,
+            or.inr $ or.inr $ this
+        )
+        (λ rest, or.elim rest
+            (λ haeqb,
+                have a - b = a - a, by rw haeqb,
+                have a - b = 0, by rw [this, sub_self],
+                or.inl this
+            )
+            (λ hblta,
+                have 0 < a - b, from (iff.elim_right sub_pos) hblta,
+                or.inr $ or.inl $ this
+            )
+        )
+
+    example : a < b → b < c → a < c :=
+    assume hab hbc,
+    have hbapos :  0 < b - a, from sub_pos.elim_right hab,
+    have hcbpos : 0 < c - b, from sub_pos.elim_right hbc,
+    have lt : 0 < (c - b) + (b - a), from add_closure α (c - b) (b - a) hcbpos hbapos,
+    have (c - b) + (b - a) = c - a, from (
+        calc
+        (c - b) + (b - a) = (c + -b) + (b + -a) : rfl
+                      ... = c + (-b + (b + -a)) : by rw [add_assoc]
+                      ... = c + ((-b + b) + -a) : by rw [add_assoc]
+                      ... = c + (0 + -a) : by rw [opp_add]
+                      ... = c + - a : by rw [zero_add']
+                      ... = c - a : rfl
+    ),
+    have 0 < c - a, from eq.subst this lt,
+    show a < c, from sub_pos.elim_left this
+
+    -- The product of two negative numbers is positive.
+    def neg_mul_neg_pos : a < 0 → b < 0 → 0 < (a * b) :=
+    assume aneg bneg,
+    have aneg : - - a < 0, from eq.substr (neg_neg a) aneg,
+    have bneg : - - b < 0, from eq.substr (neg_neg b) bneg,
+    have min_a_pos : 0 < -a, from neg_lt_zero.elim_left aneg,
+    have min_b_pos : 0 < -b, from neg_lt_zero.elim_left bneg,
+    have mul_neg : 0 < (-a) * (-b), from mul_closure α (-a) (-b) min_a_pos min_b_pos,
+    have -a * -b = a * b, from neg_mul_neg_eq_pos_mul_pos α a b,
+    show 0 < (a * b), from eq.subst this mul_neg
+
+    def any_number_squared_is_positive : a ≠ 0 → 0 < a ^ 2 :=
+    assume anotzero,
+    have mul_of_square : a ^ 2 = a * a, from (
+        calc
+        a ^ 2   = a * (a ^ 1) : by rw pow_succ
+            ... = a * a : by rw [pow_one]
+    ),
+    have 0 < a * a, from or.elim (trichotomy_law α a)
+        (λ hneg, neg_mul_neg_pos α a a hneg hneg)
+        (λ rest, or.elim rest
+            (λ hzero, absurd hzero anotzero)
+            (λ hpos, mul_closure α a a hpos hpos)
+        ),
+    eq.substr mul_of_square this
+
+    example : (0 : α) < (1 : α) :=
+    have one_squared_is_one : (1 : α) ^ 2 = 1, from (
+        calc
+        (1: α) ^ 2   = (1 : α) * ((1 : α) ^ 1) : pow_succ (1 : α) (1 : ℕ)
+            ... = 1 * 1 : by rw [pow_one]
+            ... = 1 : by rw [mul_one]
+    ),
+    have onenezero : (1 : α) ≠ (0 : α), from one_ne_zero,
+    have (0 : α) < (1 ^ 2), from any_number_squared_is_positive α 1 onenezero,
+    eq.subst one_squared_is_one this
+
+    def theorem_one : abs (a + b) ≤ (abs a) + (abs b) := sorry
 
 end properties
