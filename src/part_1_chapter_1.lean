@@ -273,6 +273,89 @@ namespace properties
     have (0 : α) < (1 ^ 2), from any_number_squared_is_positive α 1 onenezero,
     eq.subst one_squared_is_one this
 
-    def theorem_one : abs (a + b) ≤ (abs a) + (abs b) := sorry
+    def le_dichotomy : a ≤ 0 ∨ 0 ≤ a :=
+    or.elim (trichotomy_law α a)
+        (λ aneg, or.inl $ le_of_lt aneg)
+        (λ rest,
+        or.elim rest
+            (λ azero, or.inl $ le_of_eq azero)
+            (λ apos, or.inr $ le_of_lt apos)
+        )
+
+    def theorem_one_helper_1 : 0 ≤ b → -a + -b ≤ -a + b :=
+    assume hnonneg,
+    have -b ≤ 0, from neg_nonpos.elim_right hnonneg,
+    have left : -a + -b ≤ -a, from add_le_iff_nonpos_right.elim_right this,
+    have right : -a ≤ -a + b, from le_add_of_nonneg_right' hnonneg,
+    le_trans left right
+
+    def theorem_one_helper_2 : a ≤ 0 → a + b ≤ -a + b :=
+    assume anonpos,
+    have left : a + b ≤ b, from add_le_iff_nonpos_left.elim_right anonpos,
+    have 0 ≤ -a, from neg_nonneg.elim_right anonpos,
+    have right : b ≤ -a + b, from (
+        have b + 0 ≤ b + -a, from add_le_add (le_refl b) this,
+        have that : b + 0 ≤ -a + b, from eq.subst (add_comm b (-a)) this,
+        have (has_le.le (b + 0)) = (has_le.le b), by rw [add_zero],
+        show b ≤ -a + b, from eq.subst this that
+    ),
+    le_trans left right
+
+    def theorem_one_helper_3 : ∀ a b : α, a ≤ 0 → 0 ≤ b → abs (a + b) ≤ (abs a) + (abs b) :=
+    begin
+        intros a b hanonpos hbnonneg,
+        have absa : abs a = -a, from abs_of_nonpos hanonpos,
+        have absb : abs b = b, from abs_of_nonneg hbnonneg,
+        cases (le_dichotomy α (a + b)),
+        {   have abssum : abs (a + b) = -(a + b), from abs_of_nonpos h,
+            rw [abssum, absa, absb],
+            show -(a + b) ≤ -a + b, from (
+                have l1 : -(a + b) = -a + -b, by rw neg_add,
+                have l2 : -a + -b ≤ -a + b, from theorem_one_helper_1 α a b hbnonneg,
+                eq.substr l1 l2
+            )
+        },
+        have abssum : abs (a + b) = a + b, from abs_of_nonneg h,
+        rw [abssum, absa, absb],
+        show a + b ≤ -a + b, from theorem_one_helper_2 α a b hanonpos
+    end
+
+    def theorem_one : abs (a + b) ≤ (abs a) + (abs b) :=
+    begin
+        cases (le_dichotomy α a),
+        all_goals { cases (le_dichotomy α b) },
+            {   have absa : abs a = -a, from abs_of_nonpos h,
+                have absb : abs b = -b, from abs_of_nonpos h_1,
+                have abssum : abs (a + b) = -(a + b), from (
+                    have a + b ≤ 0, from add_nonpos h h_1,
+                    abs_of_nonpos this
+                ),
+                have : abs (a + b) = abs a + abs b, from (
+                    calc
+                    abs (a + b) = -(a + b) : abssum
+                            ... = -a + -b : by rw [neg_add]
+                            ... = abs a + abs b : by rw [absa, absb]
+                ),
+                exact le_of_eq this
+            },
+            { exact theorem_one_helper_3 α _ _ h h_1 },
+            {   have l1 : abs (b + a) ≤ (abs b) + (abs a), from theorem_one_helper_3 α _ _ h_1 h,
+                have l2 : abs (b + a) ≤ (abs a) + (abs b), from eq.subst (add_comm (abs b) (abs a)) l1,
+                exact eq.subst (add_comm b a) l2
+            },
+        {   have absa : abs a = a, from abs_of_nonneg h,
+            have absb : abs b = b, from abs_of_nonneg h_1,
+            have abssum : abs (a + b) = a + b, from (
+                have 0 ≤ a + b, from add_nonneg h h_1,
+                abs_of_nonneg this
+            ),
+            have : abs (a + b) = abs a + abs b, from (
+                calc
+                abs (a + b) = a + b : abssum
+                        ... = abs a + abs b : by rw [absa, absb]
+            ),
+            exact le_of_eq this
+        },
+    end
 
 end properties
