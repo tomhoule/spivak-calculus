@@ -219,7 +219,8 @@ namespace properties
             )
         )
 
-    example : a < b → b < c → a < c :=
+
+    def lt_trans' : a < b → b < c → a < c :=
     assume hab hbc,
     have hbapos :  0 < b - a, from sub_pos.elim_right hab,
     have hcbpos : 0 < c - b, from sub_pos.elim_right hbc,
@@ -357,5 +358,249 @@ namespace properties
             exact le_of_eq this
         },
     end
+
+    -- //////// --
+    -- PROBLEMS --
+    -- \\\\\\\\ --
+
+    -- Problem 1
+
+    def problem_1_i : ∀ x : α, a ≠ 0 → a * x = a → x = 1 :=
+    λ x apos h,
+    -- prove by mul_inverse. x = a * a⁻¹
+    calc
+        x   = x * 1 : eq.symm $ mul_one' α x
+        ... = x * (a * a⁻¹) : by rw mul_inverse α a apos
+        ... = a * x * a ⁻¹ : by rw [mul_assoc', mul_comm' α x]
+        ... = a * a⁻¹ : by rw h
+        ... = 1 : mul_inverse α a apos
+
+    def problem_1_ii : ∀ x y : α, (x^2) - (y^2) = (x - y) * (x + y) :=
+    λ x y,
+    eq.symm $ calc
+        (x - y) * (x + y)   = ((x - y) * x) + ((x - y) * y) : by rw [mul_distrib' α (x-y)]
+                        ... = ((x + -y) * x) + (( x + -y) * y) : by refl
+                        ... = (x * (x + -y)) + (y * (x + -y)) : by rw [mul_comm' α _ x, mul_comm' _ y]
+                        ... = ((x * x) + (x * -y)) + ((y * x) + (y * -y)) : by rw [mul_distrib', mul_distrib']
+                        ... = ((x ^ 2) + (x * -y)) + ((y * x) + (y * -y)) : by rw [pow_two]
+                        ... = (x ^ 2) + ((x * -y) + ((y * x) + (y * -y))) : by rw [add_assoc' α (x^2)]
+                        ... = (x ^ 2) + ((x * -y) + ((x * y)) + (y * -y)) : by rw [mul_comm' α y, add_assoc (x * -y)]
+                        ... = (x ^ 2) + (x * (y + -y)) + (y * -y) : by simp
+                        ... = (x ^ 2) + (x * 0) + (y * -y) : by rw [add_opp]
+                        ... = (x ^ 2) + (y * -y) : by rw [mul_zero', add_zero']
+                        ... = (x ^ 2) + (y * (y * -1)) : by rw [mul_neg_one y]
+                        ... = (x ^ 2) + (y * (-1 * y)) : by rw [mul_comm' α y (-1)]
+                        ... = (x ^ 2) + ((y * -1) * y) : by rw [mul_assoc']
+                        ... = (x ^ 2) + (-1 * (y * y)) : by rw [mul_comm' α y, mul_assoc']
+                        ... = (x ^ 2) + -(y * y) : by rw [neg_one_mul]
+                        ... = (x ^ 2) + -(y ^ 2) : by rw [←pow_two]
+                        ... = (x ^ 2) - (y ^ 2) : rfl
+
+    -- same in the other direction.
+    example : ∀ x y : α, (x^2) - (y^2) = (x - y) * (x + y) :=
+    λ x y,
+    calc
+        (x^2) - (y^2)   = (x^2) + -(y^2) : rfl
+                    ... = (x^2) + (-y*y) : by rw [pow_two y, neg_mul_distrib]
+                    ... = (x^2) + 0 + (-y * y) : by rw add_zero
+                    ... = (x^2) + (x * 0) + (-y * y) : by rw mul_zero
+                    ... = (x^2) + (x * (-y + y)) + (-y * y) : by rw [opp_add]
+                    ... = (x^2) + ((x * -y) + (x * y)) + (-y * y) : by rw [mul_add]
+                    ... = ((x * x) + (x * -y)) + (x * y) + (-y * y) : by rw [pow_two, ←add_assoc]
+                    ... = (x * (x + -y)) + (x * y) + (-y * y) : by rw [mul_add]
+                    ... = (x * (x + -y)) + ((y * x) + (y * -y)) : by rw [add_assoc, ←mul_comm x, mul_comm (-y)]
+                    ... = (x * (x + -y)) + (y * (x + -y)) : by rw [mul_add y]
+                    ... = ((x + -y) * x) + ((x + -y) * y) : by rw [mul_comm x, mul_comm y]
+                    ... = (x + -y) * (x + y) : by rw [mul_add]
+                    ... = (x - y) * (x + y) : rfl
+
+    -- def neg_symm : a = -b → -a = b :=
+    -- assume h,
+    -- eq.symm $ calc
+    --     b   = - - b : eq.symm $ neg_neg b
+    --     ... = -a : by rw h
+
+    -- def abs_eq' : abs a = abs b a = b ∨ a = -b :=
+    -- assume h,
+    -- or.elim (le_dichotomy α a)
+    --     (λ anonpos,
+    --     have aneg : abs a = -a, from abs_of_nonpos anonpos,
+    --     or.elim (le_dichotomy α b)
+    --         (λ bnonpos,
+    --             have bneg : abs b = -b, from abs_of_nonpos bnonpos,
+    --             have abs a = -b, from eq.substr h bneg,
+    --             have -a = -b, from eq.subst aneg this,
+    --             or.inl $ eq_of_neg_eq_neg this
+    --         )
+    --         (λ bnonneg,
+    --             have abs b = b, from abs_of_nonneg bnonneg,
+    --             have abs a = b, from eq.subst this h,
+    --             (iff.elim_left $ (abs_eq bnonneg)) this
+    --         )
+    --     )
+    --     (λ anonneg,
+    --         have abs a = a, from abs_of_nonneg anonneg,
+    --         have a = abs b, from eq.subst this h,
+    --         have abs b = a, from eq.symm this,
+    --         have b = a ∨ b = -a, from  (iff.elim_left $ (@abs_eq α _ b a anonneg)) this,
+    --         have a = b ∨ b = -a, from or.imp_left eq.symm this,
+    --         show a = b ∨ a = -b, from or.imp_right (λ (x : b = -a), eq.symm $ neg_symm α b a x) this
+    --     )
+
+    def problem_1_iii : a^2 = b^2 → a = b ∨ a = -b :=
+    assume h,
+    have (a - b) * (a + b) = 0, from (
+        eq.symm $ calc
+        0   = (a^2) - (a^2) : by rw sub_self
+        ... = (a^2) - (b^2) : by rw h
+        ... = (a - b) * (a + b) : by rw problem_1_ii
+    ),
+    or.elim (zero_eq_mul.elim_left (eq.symm $ this))
+        (λ h, or.inl $ sub_eq_zero.elim_left h)
+        (λ h, or.inr $ add_eq_zero_iff_eq_neg.elim_left h)
+
+    def a_b_sq : (a + b)^2 = a^2 + a * b + a * b + b^2 :=
+    calc
+        (a + b)^2   = (a + b) * (a + b) : pow_two (a + b)
+                ... = (a + b) * a + (a + b) * b : by rw mul_add
+                ... = a * (a + b) + b * (a + b) : by simp [mul_comm]
+                ... = a * a + a * b + b * a + b * b : by simp [mul_add, add_assoc]
+                ... = a^2 + a * b + b * a + b^2 : by simp [pow_two]
+                ... = a^2 + a * b + a * b + b^2 : by rw mul_comm
+
+    def problem_1_iv : a^3 - b^3 = (a - b) * (a^2 + a * b + b^2) :=
+    have aux : ∀ x y : α, x^3 = (x * (x - y) * (x + y)) + (x * y^2), from (
+        λ x y,
+        calc
+        x^3 = x * (x^2) : by rw pow_succ
+        ... = x * (x^2) + 0 : by rw add_zero
+        ... = x * (x^2) + (x * 0) : by rw mul_zero
+        ... = x * (x^2) + (x * (-(y^2) + y^2)) : by rw opp_add
+        ... = x * (x^2 + (-(y^2) + y^2)) : by rw ←mul_add
+        ... = x * ((x^2 - (y^2)) + y^2) : by { rw [←add_assoc], reflexivity }
+        ... = x * ((x - y) * (x + y) + y^2) : by rw problem_1_ii
+        ... = (x * ((x - y) * (x + y))) + (x * y^2) : by rw mul_add
+        ... = (x * (x - y) * (x + y)) + (x * y^2) : by simp [mul_assoc]
+    ),
+    have l1 : a^3 = (a * (a - b) * (a + b)) + (a * b^2), from aux a b,
+    have l2 : b^3 = (b * (b - a) * (b + a)) + (b * a^2), from aux b a,
+    have (b - a) * (b + a) = -(a - b) * (a + b), from (
+        calc
+        (b - a) * (b + a)   = (b - a) * (a + b) : by rw add_comm
+                        ... = -(a - b) * (a + b) : by rw neg_sub
+    ),
+    have l2 : b^3 = (b * -(a - b) * (a + b)) + (b * a^2), by simp [mul_assoc, this, l2],
+    calc
+        a^3 - b^3   = ((a * (a - b) * (a + b)) + (a * b^2)) + -((b * -(a - b) * (a + b)) + (b * a^2)) : by { rw [l1, l2], refl }
+                ... = ((a * (a - b) * (a + b)) + (a * b^2)) + -(b * -(a - b) * (a + b)) + -(b * a^2) : by rw [neg_add, <-add_assoc]
+                ... = (a * (a - b) * (a + b)) + (a * b^2) + -b * -(a - b) * (a + b) + -(b * a^2) : by simp [add_assoc, neg_mul_distrib]
+                -- Move the (a * b^2) and the (-b * a^2) together.
+                ... = (a * (a - b) * (a + b)) + ((a * b^2) + -b * -(a - b) * (a + b)) + -(b * a^2) : by rw [<-add_assoc]
+                ... = (a * (a - b) * (a + b)) + (-b * -(a - b) * (a + b) + (a * b^2)) + -(b * a^2) : by simp [add_comm]
+                ... = a * (a - b) * (a + b) + -b * -(a - b) * (a + b) + ((a * b^2) + -(b * a^2)) : by simp [add_assoc]
+                -- done. flatten them.
+                ... = a * (a - b) * (a + b) + -b * -(a - b) * (a + b) + ((a * b * b) + -(b * a * a)) : by simp [pow_two, mul_assoc]
+                ... = a * (a - b) * (a + b) + -b * -(a - b) * (a + b) + ((a * b * b) - (a * b * a)) : by { rw [mul_comm b, mul_assoc a b a, mul_comm b a, <-mul_assoc], refl }
+                ... = a * (a - b) * (a + b) + -b * -(a - b) * (a + b) + ((a * b) * (b - a)) : by rw [<-mul_sub (a * b) b a]
+                -- We flattened everything, now let's try to bring the (a - b) out and simplify
+                ... = a * (a - b) * (a + b) + b * (a - b) * (a + b) + ((a * b) * (b - a)) : by rw neg_mul_neg_eq_pos_mul_pos
+                ... = a * (a - b) * (a + b) + b * (a - b) * (a + b) + ((a * b) * -(a - b)) : by rw [neg_sub]
+                ... = a * (a - b) * (a + b) + b * (a - b) * (a + b) + ((a * b) * (-1 * (a - b))) : by rw [neg_one_mul]
+                -- Look ma, we have a - b in every term now!
+                ... = (a - b) * a * (a + b) + (a - b) * b * (a + b) + (a - b) * - 1 * (a * b) : by simp [mul_assoc, mul_comm]
+                ... = (a - b) * (a * (a + b)) + (a - b) * (b * (a + b)) + (a - b) * (- 1 * (a * b)) : by repeat { rw mul_assoc }
+                ... = (a - b) * ((a * (a + b)) + (b * (a + b))) + (a - b) * (- 1 * (a * b)) : by rw [<-mul_add]
+                ... = (a - b) * (((a * (a + b)) + (b * (a + b))) + (- 1 * (a * b))) : by rw [<-mul_add]
+                ... = (a - b) * ((((a + b) * a) + ((a + b) * b)) + (- 1 * (a * b))) : by rw [mul_comm a, mul_comm b]
+                ... = (a - b) * (((a + b) * (a + b)) + (- 1 * (a * b))) : by rw [←mul_add]
+                ... = (a - b) * ((a + b)^2 + (- 1 * (a * b))) : by rw [pow_two]
+                ... = (a - b) * ((a + b)^2 + -(a * b)) : by rw [neg_one_mul]
+                ... = (a - b) * ((a^2 + a * b + a * b + b^2) + -(a * b)) : by rw a_b_sq
+                ... = (a - b) * (a^2 + a * b + (a * b + -(a * b)) + b^2) : by simp [add_assoc]
+                ... = (a - b) * (a^2 + a * b + 0 + b^2) : by rw [←add_opp]
+                ... = (a - b) * (a^2 + a * b + b^2) : by rw add_zero
+
+
+    -- have aux : ∀ x y : α, x^3 = ((x + y) * (x * (x - y))) + (x * y^2), from (
+    --     λ x y,
+    --     calc
+    --     x^3 = x * x^2 : by rw pow_succ
+    --     ... = x * x^2 + 0 : by rw add_zero
+    --     ... = x * x^2 + x * 0 : by rw mul_zero
+    --     ... = x * x^2 + x * (y^2 + - (y^2)) : by rw add_opp
+    --     ... = x * (x^2 + (y^2 + -(y^2))) : by rw ←mul_add
+    --     ... = x * (x^2 - (y^2) + y^2) : by { rw [add_comm (y^2), ←add_assoc (x^2)], reflexivity }
+    --     ... = x * (((x - y) * (x + y)) + y^2) : by rw [problem_1_ii]
+    --     ... = (x * ((x - y) * (x + y))) + (x * y^2) : by rw mul_add
+    --     ... = (x * ((x + y) * (x - y))) + (x * y^2) : by rw mul_comm (x + y)
+    --     ... = (((x + y) * x) * (x - y)) + (x * y^2) : by rw [←mul_assoc x, mul_comm x]
+    --     ... = ((x + y) * (x * (x - y))) + (x * y^2) : by rw [mul_assoc]
+    -- ),
+    -- have l1 : a^3 = ((a + b) * (a * (a - b))) + (a * b^2), from aux a b,
+    -- have l2 : b^3 = ((a + b) * (b * (b - a))) + (b * a^2), by { rw [add_comm a], exact aux b a },
+    -- calc
+    --     -- blech
+    --     a^3 - b^3   = (a + b) * (a * (a - b)) + (a * b^2) + -(((a + b) * (b * (b - a))) + (b * a^2)): by { rw [l1, l2], refl }
+    --             ... = (a + b) * (a * (a - b)) + -(((a + b) * (b * (b - a))) + (b * a^2)) + (a * b^2) : by simp [add_assoc, add_comm]
+    --             ... = (a + b) * (a * (a - b)) + (-((a + b) * (b * (b - a))) + -(b * a^2)) + (a * b^2) : by rw neg_add
+    --             ... = (a + b) * (a * (a - b)) + -((a + b) * (b * (b - a))) + -(b * a^2) + (a * b^2) : by simp [add_assoc]
+    --             ... = (a + b) * (a * (a - b)) -((a + b) * (b * (b - a))) + -(b * a^2) + (a * b^2) : rfl
+    --             ... = (a + b) * ((a * (a - b)) - (b * (b - a))) + -(b * a^2) + (a * b^2) : by rw ←mul_sub
+    --             ... = (a + b) * ((a * a - a * b) - (b * (b - a))) + -(b * a^2) + (a * b^2) : by rw <-mul_sub
+    --             ... = (a + b) * ((a * a - a * b) - (b * b - b * a)) + -(b * a^2) + (a * b^2) : by rw <-mul_sub b
+    --             ... = (a + b) * ((a^2 - a * b) - (b^2 - b * a)) + -(b * a^2) + (a * b^2) : by rw [pow_two a, pow_two b]
+    --             ... = (a + b) * (a^2 + -(a * b) + -(b^2 - a * b)) + -(b * a^2) + (a * b^2) : by {rw [mul_comm b], refl }
+    --             ... = (a + b) * (a^2 + -(a * b) + (a * b + -(b^2))) + -(b * a^2) + (a * b^2) : by { rw [neg_sub], refl }
+    --             ... = (a + b) * (a^2 + (-(a * b) + a * b) + -(b^2)) + -(b * a^2) + (a * b^2) : by simp [add_assoc]
+    --             ... = (a + b) * (a^2 - (b^2)) + -(b * a^2) + (a * b^2) : by { rw [opp_add, add_zero], reflexivity }
+    --             ... = (a + b) * ((a - b) * (a + b)) + -(b * a^2) + (a * b^2) : by rw [problem_1_ii]
+    --             ... = (a + b) * ((a - b) * (a + b)) + -(b * (a * a)) + (a * b^2) : by rw [pow_two]
+    --             ... = (a + b) * ((a - b) * (a + b)) + -(b * a * a) + (a * b^2) : by rw [mul_assoc]
+    --             ... = (a + b) * ((a - b) * (a + b)) + -(a * b * a) + (a * b^2) : by rw [mul_comm b]
+    --             ... = (a + b) * ((a - b) * (a + b)) + -(a * b * a) + (b^2 * a) : by rw [mul_comm a (b^2)]
+    --             ... = (a + b) * ((a - b) * (a + b)) + (-(a * b * a) + (b^2 * a)) : by rw [add_assoc]
+    --             ... = (a + b) * ((a - b) * (a + b)) + ((b^2 * a) - (a * b * a)) : by { rw [add_comm (-(a * b * a))], refl }
+    --             ... = (a + b) * ((a - b) * (a + b)) + ((b^2 - (a * b)) * a) : by rw sub_mul _ _ a
+    --             ... = (a - b) * (a^2 + a * b + b^2) : sorry
+
+
+    -- have l1 : a^3 = a * (a^2 + a*b + b^2), from (
+    --     calc
+    --         a^3 = a * (a^2) : by rw pow_succ
+    --         ... = a * (a^2) + 0 : by rw [add_zero (a * a^2)]
+    --         ... = a * (a^2) + a * 0 : by rw [mul_zero]
+    --         ... = a * (a^2) + a * (b^2 + -(b^2)) : by rw [add_opp]
+    --         ... = a * (a^2 + -(b^2) + b^2) : by rw [←mul_add, add_comm (b^2), add_assoc (a^2)]
+    --         ... = a * (a^2 - (b^2) + b^2) : sorry
+    --         ... = a * ((a - b) * (a + b) + b^2) : by rw problem_1_ii
+    --         ... = a * (a ^ 2 + a*b + b^2) : sorry
+    -- ),
+    -- have l2 : b^3 = b * (a^2 + a*b + b^2), from sorry,
+    -- calc
+    --     a^3 - b^3   = a * (a^2 + a * b + b^2) - b * (a^2 + a * b + b^2) : by rw [l1, l2]
+    --             ... = (a - b) * (a^2 + a * b + b^2) : by rw [mul_comm a, mul_comm b, ←mul_sub, mul_comm]
+
+    -- calc
+    --    a^3 - b^3    = a^3 + -(b^3) : rfl
+    --             ... = a^3 + -(b * b^2) : by rw [pow_succ b]
+    --             ... = a^3 + -b * b^2 : by rw [neg_mul_distrib]
+    --             -- Introduce a middle term to factor in `b`s in the left term.
+    --             ... = a^3 + 0 + -b * b^2 : by rw [add_zero]
+    --             ... = a^3 + (a * 0) + -b * b^2 : by rw [mul_zero]
+    --             ... = a^3 + (a * (b^2 + -(b^2))) + -b * b^2 : by rw [add_opp]
+    --             ... = (a * a^2 + (a * (b^2 +-(b^2)))) + -b * b^2 : by rw [pow_succ]
+    --             ... = (a * (a^2 + b^2 + -(b^2))) + -b * b^2 : by rw [←mul_add, add_assoc]
+    --             -- We merged our middle term to the left, now time to do the same to the right.
+    --             ... = (a * (a^2 + a * b + b^2)) + 0 + -b * b^2 : by rw [add_zero]
+    --             ... = (a * (a^2 + a * b + b^2)) + ((-b) * 0) + -b * b^2 : by rw [mul_zero]
+    --             ... = (a * (a^2 + a * b + b^2)) + ((-b) * (a + -a)) + -b * b^2 : by rw [←add_opp]
+    --             ... = (a * (a^2 + a * b + b^2)) + (((-b) * (a + -a)) + -b * b^2) : by rw [add_assoc]
+    --             ... = (a * (a^2 + a * b + b^2)) + ((-b) * (a + -a + b^2)) : by rw [←mul_add]
+
+    --             ... = (a - b) * (a^2 + a * b + b^2) : sorry
+
+    -- TODO: define this one, the type signature is not obvious. We probably need a dependent struct type to
+    -- define the predecessors (the middle `...` in the book).
+    def problem_1_v : ∀ n : ℕ, 1 < n → a^n - b^n = (a - b) * (a^(n-1) + a * b + b^(n-1)) := sorry
 
 end properties
