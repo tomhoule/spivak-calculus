@@ -599,8 +599,35 @@ namespace properties
 
     --             ... = (a - b) * (a^2 + a * b + b^2) : sorry
 
-    -- TODO: define this one, the type signature is not obvious. We probably need a dependent struct type to
-    -- define the predecessors (the middle `...` in the book).
-    def problem_1_v : ∀ n : ℕ, 1 < n → a^n - b^n = (a - b) * (a^(n-1) + a * b + b^(n-1)) := sorry
+    def gizmo (a b : α) : Π (n : ℕ), α
+    | 0 := 0
+    | 1 := (a * b)
+    | (nat.succ n) := (a^n * b + gizmo n + a * b^n)
+
+    def problem_1_v (a b : α) :
+    ∀ n : ℕ, 3 < n →
+        a^n - b^n = (a - b) * (a^(n-1) + a^(n-2) * b + (gizmo α a b n) + a * b^(n-2) +b^(n-1))
+    | 0 threeltn := sorry
+    | 1 threeltn := sorry
+    | 2 threeltn := sorry
+    | 3 threeltn := sorry
+    | (nat.succ (nat.succ n)) twoltn := (
+        have aux : ∀ x y : α, x^(n+2) = x * (x^(n+1) + -(y^(n+1)) + y^(n+1)), from (
+            λ x y,
+            calc
+            x^(n+2) = x * x^(n+1) : by rw pow_succ
+                ... = x * x^(n+1) + 0 : by rw [add_zero (x * x^(n+1))]
+                ... = x * x^(n+1) + x * 0 : by rw mul_zero
+                ... = x * x^(n+1) + x * (-(y^(n+1)) + y^(n+1)) : by rw opp_add
+                ... = x * (x^(n+1) + (-(y^(n+1)) + y^(n+1))) : by rw ←mul_add
+                ... = x * (x^(n+1) + -(y^(n+1)) + y^(n+1)) : by rw ←add_assoc
+        ),
+        have l1 : a^(n+2) = a * (a^(n+1) + -(b^(n+1)) + b^(n+1)), from aux a b,
+        have l2 : b^(n+2) = b * (b^(n+1) + -(a^(n+1)) + a^(n+1)), from aux b a,
+        sorry
+        -- calc
+        --     a^(n+2) - b^(n+2)   = a^(n+2) + -(b^(n+2)) : rfl
+        --                     ... = (a - b) * (a^(n-1) + a^(n-2) * b + (gizmo α a b n) + a * b^(n-2) +b^(n-1)) : sorry
+    )
 
 end properties
