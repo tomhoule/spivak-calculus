@@ -18,6 +18,14 @@ namespace chapter1_problems
     example : @gizmo α _ a b (1: ℕ) = a^1 * b + gizmo a b 0 + a * b^1 := rfl
     example : @gizmo α _ a b (2: ℕ) = a^2 * b + gizmo a b 1 + a * b^2 := rfl
 
+    def gizmo_symm (a b : α): ∀ (n : ℕ), gizmo a b n = gizmo b a n
+    | 0 := rfl
+    | (nat.succ n) := calc
+        gizmo a b (nat.succ n)  = a^(nat.succ n) * b + gizmo a b n + a * b^(nat.succ n) : rfl
+                            ... = a^(nat.succ n) * b + gizmo b a n + a * b^(nat.succ n) : by rw gizmo_symm n
+                            ... = b^(nat.succ n) * a + gizmo b a n + b * a^(nat.succ n) : by simp [add_comm, add_assoc, mul_comm]
+                            ... = gizmo b a (nat.succ n) : rfl
+
     def lt_helper_1 : ∀ n : ℕ, 1 < n + 2 := sorry
 
     def problem_1_v (a b : α) :
@@ -33,7 +41,7 @@ namespace chapter1_problems
                 ... = (a - b) * (a^1 + 0 + b^1) : by rw add_zero
                 ... = (a - b) * (a^1 + gizmo a b 0 + b^1) : by rw gizmo
     | (n+3) _ :=
-        have l1 : a^(n+3) = a * ((a - b) * (a^(n+1) + gizmo a b n + b^(n+1)) + b^(n+2)), from
+        have l1 : a^(n+3) = a * ((a - b) * (a^(n+1) + gizmo a b n + b^(n+1))) + a * b^(n+2), from
             calc
             a^(n+3) = a * (a^(n+2)) : by rw pow_succ
                 ... = a * (a^(n+2)) + 0 : by rw add_zero (a * (a^(n+2)))
@@ -42,10 +50,63 @@ namespace chapter1_problems
                 ... = a * (a^(n+2) + (-(b^(n+2)) + b^(n+2))) : by rw ←mul_add
                 ... = a * ((a^(n+2) - (b^(n+2))) + b^(n+2)) : by { rw [←add_assoc], reflexivity }
                 ... = a * (((a - b) * (a^(n+1) + (gizmo a b n) + b^(n+1))) + b^(n+2)) : by { rw [problem_1_v (n+2) (lt_helper_1 n)], refl }
-                ... = a * ((a - b) * (a^(n+1) + gizmo a b n + b^(n+1)) + b^(n+2)) : by simp [mul_assoc, add_assoc],
+                ... = a * ((a - b) * (a^(n+1) + gizmo a b n + b^(n+1)) + b^(n+2)) : by simp [mul_assoc, add_assoc]
+                ... = a * ((a - b) * (a^(n+1) + gizmo a b n + b^(n+1))) + a * b^(n+2) : by rw ←mul_add a,
+        have l2: b^(n+3) = b * -((a - b) * (a^(n+1) + gizmo a b n + b^(n+1))) + b * a^(n+2), from
+            calc
+            b^(n+3) = b * (b^(n+2)) : by rw pow_succ
+                ... = b * (b^(n+2)) + 0 : by rw add_zero (b * b^(n+2))
+                ... = b * (b^(n+2)) + b * 0 : by rw mul_zero
+                ... = b * (b^(n+2)) + b * (-(a^(n+2)) + a^(n+2)) : by rw add_left_neg
+                ... = b * (b^(n+2)) + b * (-(a^(n+2)) + a^(n+2)) : by rw add_left_neg
+                ... = b * (b^(n+2) + -(a^(n+2)) + a^(n+2)) : by rw [←mul_add, add_assoc]
+                ... = b * (b^(n+2) - (a^(n+2)) + a^(n+2)) : rfl
+                ... = b * (-(a^(n+2) - (b^(n+2))) + a^(n+2)) : by rw neg_sub
+                ... = b * (-((a - b) * (a^(n+1) + (gizmo a b n) + b^(n+1))) + a^(n+2)) : by { rw [problem_1_v (n+2) (lt_helper_1 n)], refl }
+                ... = b * -((a - b) * (a^(n+1) + gizmo a b n + b^(n+1))) + b * a^(n+2) : by rw ←mul_add,
+        have l3 : a * b^(n+2) + -(b * a^(n+2)) = (a - b) * 3, from calc
+            a * b^(n+2) + -(b * a^(n+2))    = a * b^(n+2) + -(a^(n+2) * b) : by rw [mul_comm b]
+                                        ... = a * (b^(n+2) + 0) + -((a^(n+2) + 0) * b) : by rw [add_zero (b^(n+2)), add_zero (a^(n+2))]
+                                        ... = a * (b^(n+2) + (-(a^(n+2)) + (a^(n+2)))) + -((a^(n+2) + (-(b^(n+2)) + b^(n+2))) * b) : by rw [neg_add_self, neg_add_self]
+                                        ... = a * (b^(n+2) + (-(a^(n+2)) + (a^(n+2)))) + (-(a^(n+2) + (-(b^(n+2)) + b^(n+2))) * b) : by rw [properties.neg_mul_distrib]
+                                        ... = a * (b^(n+2) + (-(a^(n+2)) + (a^(n+2)))) + ((-(a^(n+2)) + -(-(b^(n+2)) + b^(n+2))) * b) : by rw [neg_add]
+                                        ... = a * (b^(n+2) + (-(a^(n+2)) + (a^(n+2)))) + ((-(a^(n+2)) + (b^(n+2) + -(b^(n+2)))) * b) : by rw [neg_add, neg_neg]
+                                        ... = a * (b^(n+2) + (-(a^(n+2)) + (a^(n+2)))) + ((b^(n+2) + -(a^(n+2)) + -(b^(n+2))) * b) : by simp [add_comm, add_assoc]
+                                        ... = a * (b^(n+2) + (-(a^(n+2)) + (a^(n+2)))) + b * (b^(n+2) + -(a^(n+2)) + -(b^(n+2))) : by rw [mul_comm b]
+                                        ... = a * (b^(n+2) + -(a^(n+2))) + a * a^(n+2) + (b * (b^(n+2) + -(a^(n+2))) + b * -(b^(n+2))) : by simp [mul_add]
+                                        ... = (b^(n+2) + -(a^(n+2))) * a + a * a^(n+2) + (b * (b^(n+2) + -(a^(n+2))) + b * -(b^(n+2))) : by rw [mul_comm a]
+                                        ... = (b^(n+2) + -(a^(n+2))) * a + a * a^(n+2) + b * (b^(n+2) + -(a^(n+2))) + b * -(b^(n+2)) : by rw [<-add_assoc]
+                                        ... = (b^(n+2) + -(a^(n+2))) * a + a * a^(n+2) + (b^(n+2) + -(a^(n+2))) * b + b * -(b^(n+2)) : by rw [mul_comm b]
+                                        ... = (b^(n+2) + -(a^(n+2))) * a + (a * a^(n+2) + (b^(n+2) + -(a^(n+2))) * b) + b * -(b^(n+2)) : by rw [<-add_assoc]
+                                        ... = (b^(n+2) + -(a^(n+2))) * a + ((b^(n+2) + -(a^(n+2))) * b + a * a^(n+2)) + b * -(b^(n+2)) : by rw [add_comm (a * a^(n+2))]
+                                        ... = (b^(n+2) + -(a^(n+2))) * a + (b^(n+2) + -(a^(n+2))) * b + a * a^(n+2) + b * -(b^(n+2)) : by rw [<-add_assoc]
+                                        ... = (b^(n+2) + -(a^(n+2))) * (a + b) + a * a^(n+2) + b * -(b^(n+2)) : by rw [mul_add]
+
+                                        ... = (a - b) * 3 : sorry,
+                                    --  ... = a * b * b^(n+1) + -b * (a * a^(n+1)) : by rw [properties.neg_mul_distrib]
+                                    --  ... = a * (b * b^(n+1)) + -b * (a * a^(n+1)) : by simp [mul_assoc]
+                                    --  ... = (b * b^(n+1)) * a + -b * (a * a^(n+1)) : by simp [mul_assoc]
+                                    --  ... = a * (b * b^(n+1)) + (-b * a) * a^(n+1) : by simp [mul_assoc]
+                                    --  ... = a * (b * b^(n+1)) + (a * -b) * a^(n+1) : by rw [mul_comm (-b) a]
+                                    --  ... = a * (b * b^(n+1)) + a * (-b * a^(n+1)) : by simp [mul_assoc]
+                                    --  ... = a * ((b * b^(n+1)) + (-b * a^(n+1))) : by rw mul_add
+                                    --  ... = a * ((b * (b^(n+1))) + -(b * (a^(n+1)))) : by rw [properties.neg_mul_distrib]
+                                    --  ... = a * ((b * (b^(n+1))) - (b * (a^(n+1)))) : rfl
+                                    --  ... = a * (b * ((b^(n+1)) - (a^(n+1)))) : by rw ←mul_sub
+                                    --  ... = a * b * ((b^(n+1)) - (a^(n+1))) : by rw mul_assoc,
         have next_gizmo : a^(n+1) * b + gizmo a b n + a * b^(n+1) = gizmo a b (n+1), from rfl,
         calc
-        a^(n+3) - b^(n+3)   = a^(n+3) + -(b^(n+3)) : rfl
+        a^(n+3) - b^(n+3)   = a * ((a - b) * (a^(n+1) + gizmo a b n + b^(n+1))) + a * b^(n+2) - (b * -((a - b) * (a^(n+1) + gizmo a b n + b^(n+1))) + b * a^(n+2)) : by rw [l1, l2]
+                        ... = a * ((a - b) * (a^(n+1) + gizmo a b n + b^(n+1))) + a * b^(n+2) + -(b * -((a - b) * (a^(n+1) + gizmo a b n + b^(n+1))) + b * a^(n+2)) : rfl
+                        ... = a * ((a - b) * (a^(n+1) + gizmo a b n + b^(n+1))) + a * b^(n+2) + -(b * -((a - b) * (a^(n+1) + gizmo a b n + b^(n+1)))) + -(b * a^(n+2)) : by simp [neg_add, add_assoc]
+                        ... = a * ((a - b) * (a^(n+1) + gizmo a b n + b^(n+1))) + (a * b^(n+2) + -(b * -((a - b) * (a^(n+1) + gizmo a b n + b^(n+1))))) + -(b * a^(n+2)) : by simp [add_assoc]
+                        ... = a * ((a - b) * (a^(n+1) + gizmo a b n + b^(n+1))) + (-(b * -((a - b) * (a^(n+1) + gizmo a b n + b^(n+1)))) + a * b^(n+2)) + -(b * a^(n+2)) : by simp [add_comm]
+                        ... = a * ((a - b) * (a^(n+1) + gizmo a b n + b^(n+1))) + -(b * -((a - b) * (a^(n+1) + gizmo a b n + b^(n+1)))) + (a * b^(n+2) + -(b * a^(n+2))) : by simp [add_assoc]
+                        ... = a * ((a - b) * (a^(n+1) + gizmo a b n + b^(n+1))) + (-b * -((a - b) * (a^(n+1) + gizmo a b n + b^(n+1)))) + (a * b^(n+2) + -(b * a^(n+2))) : by rw properties.neg_mul_distrib
+                        ... = a * ((a - b) * (a^(n+1) + gizmo a b n + b^(n+1))) + (b * ((a - b) * (a^(n+1) + gizmo a b n + b^(n+1)))) + (a * b^(n+2) + -(b * a^(n+2))) : by rw properties.neg_mul_neg_eq_pos_mul_pos
+                        ... = ((a - b) * (a^(n+1) + gizmo a b n + b^(n+1))) * a + (((a - b) * (a^(n+1) + gizmo a b n + b^(n+1))) * b) + (a * b^(n+2) + -(b * a^(n+2))) : by simp [mul_comm]
+                        ... = ((a - b) * (a^(n+1) + gizmo a b n + b^(n+1))) * (a + b) + (a * b^(n+2) + -(b * a^(n+2))) : by rw <-mul_add
+
                         ... = (a - b) * (a^(n+2) + gizmo a b (n+1) + b^(n+2)) : sorry
 
               -- sorry -- use square as the base case: a^1 + gizmo 0 + b^1
