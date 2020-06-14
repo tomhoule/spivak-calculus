@@ -1,0 +1,2 @@
+-- Between the (x+y)(x-y) = y(x-y) and the (x+y) = y step, there is a division by (x-y), which,
+-- since x = y, is zero.

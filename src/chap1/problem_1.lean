@@ -1,6 +1,5 @@
 import algebra.ordered_field
 import algebra.big_operators
--- import part_1_chapter_1
 
 variables {α : Type} [discrete_linear_ordered_field α]
 variables {a b : α}
