@@ -130,3 +130,14 @@ section v
                         ... = (a - b) * gizmo a b (n+1) : by rw next_gizmo n
 
 end v
+
+-- (vi)
+def cube_cube_add : a^3 + b^3 = (a + b) * (a^2 - (a * b) + b^2) :=
+calc
+    a^3 + b^3   = a^3 + - -(b^3) : by rw [neg_neg]
+            ... = a^3 - -(b^3) : rfl
+            ... = a^3 - -b^3 : by simp [pow_succ]
+            ... = (a - -b) * (a^2 + a * -b + -b^2) : by rw cube_cube_sub
+            ... = (a + b) * (a^2 + a * -b + -b^2) : by rw sub_neg_eq_add
+            ... = (a + b) * (a^2 + -(a * b) + b^2) : by simp
+            ... = (a + b) * (a^2 - (a*b) + b^2) : rfl
