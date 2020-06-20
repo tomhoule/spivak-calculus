@@ -1,6 +1,7 @@
 
 import data.rat.basic
 import data.real.basic
+import tactic.norm_num
 
 variables {x : ℤ}
 
@@ -52,3 +53,56 @@ have ↑7 < ↑(abs x) * ↑(abs x), by rwa [mul_cast_self (abs x)] at this,
 have ↑7 < abs ↑x * abs ↑x, by rwa [int.cast_abs] at this,
 have real.sqrt (↑7) < real.sqrt (abs ↑x * abs ↑x), from (iff.elim_right $ real.sqrt_lt sevennonneg absx_mul_nonneg) this,
 show real.sqrt (↑7) < abs ↑x, by rwa [real.sqrt_mul_self (abs_nonneg x)] at this
+
+-- (iv)
+example : 0 < (x - 1) * (x - 3) → 3 < x ∨ x < 3 :=
+assume h,
+have (0 < x - 1 ∧ 0 < x - 3) ∨ (x - 1 < 0 ∧ x - 3 < 0), from pos_and_pos_or_neg_and_neg_of_mul_pos h,
+or.elim this
+    (λ ⟨xm1pos, xm3pos⟩,
+        -- 0 < x-1 only tells us x is at least 2, so we ignore it.
+        have 0 + 3 < x - 3 + 3, from add_lt_add_right xm3pos 3,
+        have 3 < x + -3 + 3, by assumption,
+        have 3 < x + 0, by rwa [add_assoc] at this,
+        or.inl $ show 3 < x, by rwa [add_zero] at this
+    )
+    (λ ⟨xm1neg, xm3neg⟩,
+        -- x-1 < 0 only tells us x is less than 1, so we ignore it.
+        have x - 3 + 3 < 0 + 3, from add_lt_add_right xm3neg 3,
+        have x + -3 + 3 < 3, by rwa [zero_add] at this,
+        have x + (-3 + 3) < 3, by rwa [add_assoc] at this,
+        or.inr $ show x < 3, by rwa [neg_add_self, add_zero] at this
+    )
+
+-- (v)
+example : 0 < x^2 - 2*x + 2 :=
+have factorized : x^2 - 2*x + 2 = (x - 1)^2 + 1, from eq.symm $ calc
+    (x - 1)^2 + 1   = (x-1) * (x-1) + 1 : by rw pow_two
+                ... = (x+-1) * (x+-1) + 1 : rfl
+                ... = x * x + -1 * x + (x+-1) * (-1) + 1 : by rw [mul_add, add_mul]
+                ... = x^2 + -x + (x+-1) * (-1) + 1 : by rw [pow_two, neg_one_mul]
+                ... = x^2 + -x + (x * -1 + -1 * -1) + 1 : by rw [add_mul]
+                ... = x^2 + -x + (-x + 1) + 1 : by rw [mul_neg_one, neg_one_mul (-(1 : ℤ)), neg_neg]
+                ... = x^2 + (-x + -x) + (1 + 1) : by simp [add_assoc]
+                ... = x^2 + (-x)*2 + (1+1) : by rw [mul_two (-x)]
+                ... = x^2 + -(x*2) + (1+1) : by rw [neg_mul_eq_neg_mul]
+                ... = x^2 - (x*2) + 2 : rfl
+                ... = x^2 - 2*x + 2 : by rw [mul_comm],
+have h1 : 0 ≤ (x-1)^2, from pow_two_nonneg (x-1),
+have h2 : (x-1)^2 < (x-1)^2 + 1, from int.lt_succ ((x-1)^2),
+have h3 : 0 < (x-1)^2 + 1, from lt_of_le_of_lt h1 h2,
+show 0 < (x^2) - 2*x + 2, by rwa [factorized]
+
+
+-- (vi)
+example : 2 < x^2 + x + 1 → 1 < x^2 + x :=
+assume h,
+have 2 + -1 < x^2 + x + 1 + -1, from add_lt_add_right h (-1),
+have 1 < x^2 + x + 0, by rwa [add_assoc] at this,
+have 1 < x^2 + x, by rwa [add_zero] at this,
+this -- you can go further with the quadratic formula, but I couldn't find it in mathlib
+
+-- (vii)
+example : 16 < x^2 - x + 10 := sorry
+
+example : (↑x : ℝ) + (16 : ℝ) - 6 = x + 10 := by { rw add_sub_assoc, norm_num }
