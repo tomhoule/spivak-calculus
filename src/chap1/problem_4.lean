@@ -95,14 +95,65 @@ show 0 < (x^2) - 2*x + 2, by rwa [factorized]
 
 
 -- (vi)
-example : 2 < x^2 + x + 1 → 1 < x^2 + x :=
+example : 2 < x^2 + x + 1 → 0 < x^2 + x - 1 :=
 assume h,
-have 2 + -1 < x^2 + x + 1 + -1, from add_lt_add_right h (-1),
-have 1 < x^2 + x + 0, by rwa [add_assoc] at this,
-have 1 < x^2 + x, by rwa [add_zero] at this,
-this -- you can go further with the quadratic formula, but I couldn't find it in mathlib
+have 2 + -2 < x^2 + x + 1 + -2, from add_lt_add_right h (-2),
+have 0 < x^2 + x + -1, by rwa [add_assoc] at this,
+have 0 < x^2 + x - 1, by assumption,
+-- I don't know how to go further with lean at this point. You could use the quadratic formula to
+-- get the roots, then take any value of x in the intervals to find out the sign, and take the
+-- positive ones. But that's not a proof.
+this
+
+def complete_the_square : ∀ (a n m : ℤ), a^2 + (n + m) * a + n * m = (a + m) * (a + n) :=
+assume a n m,
+calc
+a^2+(n+m)*a+n*m = a*a + (n+m)*a + n*m : by rw pow_two
+            ... = a*a + a*n + a*m + n*m : by ring
+            ... = a * (a + n) + (a + n) * m : by ring
+            ... = (a + m) * (a + n) : by ring
 
 -- (vii)
-example : 16 < x^2 - x + 10 := sorry
+example : 16 < x^2 - x + 10 → (3 < x ∨ x < -2) :=
+assume h,
+have 16 - 16 < x^2 - x + 10 - 16, from sub_lt_sub_right h 16,
+have 16 - 16 < x^2 + -x + 10 + -16, by assumption,
+have checkpoint : 0 < x^2 + -x + -6, by rwa [add_assoc] at this,
+have helper : x^2 + (-3 + 2) * x + (-3) * 2 = x^2 + -x + -6, by ring,
+have factored : 0 < (x + 2) * (x - 3), by rwa [←helper, complete_the_square x (-3) 2] at checkpoint,
+or.elim (decidable.le_or_lt 0 (x + 2))
+    (λ (h : 0 ≤ x+2),
+        have 0 < x-3, from pos_of_mul_pos_left factored h,
+        or.inl $ show 3 < x, by simpa
+    )
+    (λ (h : x + 2 < 0),
+        have x + 2 - 2 < 0 -2, from sub_lt_sub_right h 2,
+        have x + 0 < -2, by rwa [add_sub_assoc] at this,
+        have x < -2, by rwa [add_zero] at this,
+        or.inr $ this
+    )
 
-example : (↑x : ℝ) + (16 : ℝ) - 6 = x + 10 := by { rw add_sub_assoc, norm_num }
+--- (viii)
+example : 0 < x^2 + x + 1 := sorry -- can't factorize, we would have to use the quadratic formula here
+
+--- (ix)
+constant π : ℤ -- just because I can
+
+example : 0 < (x - π) * (x + 5) * (x - 3) := sorry -- these three being the roots
+-- begin
+-- intro h,
+-- have h1 : (0 < (x - π) * (x + 5) ∧ 0 < x - 3) ∨
+--             (((x - π) * (x + 5) < 0)) ∧ x - 3 < 0, from pos_and_pos_or_neg_and_neg_of_mul_pos h,
+-- cases h1,
+-- {
+--     have h2 : (0 < x - π ∧ 0 < x + 5) ∨ (x - π < 0 ∧ x + 5 < 0), from pos_and_pos_or_neg_and_neg_of_mul_pos h1.left,
+--     cases h2,
+--     { sorry },
+--     sorry
+-- },
+-- -- have h2 : (0 < x - π ∧ 0 < x + 5) ∨ (x - π < 0 ∧ x + 5 < 0), from neg_of_mul_neg_left sorry,
+-- sorry
+-- end
+
+-- This is painful, I am stopping this exercise here. It feels like I don't have the tools to do
+-- interesting proofs on inequalities. It would involve computational/visual methods.
