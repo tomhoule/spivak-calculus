@@ -46,7 +46,7 @@ have 0 < (b*c) - (a*c), by rwa [mul_sub, mul_comm c b, mul_comm c a] at this,
 have 0 + (a*c) < b*c - a*c + a*c, from add_lt_add_right this (a*c),
 by simpa
 
--- (v)
+-- (v), alias mul_lt_mul_right
 example : a < b → c < 0 → b*c < a*c :=
 assume altb cneg,
 have 0 < b - a, from sub_pos_of_lt altb,
@@ -64,8 +64,14 @@ have 1 * a < a * a, from (mul_lt_mul_right apos).elim_right onelta,
 show a < a^2, by rwa [one_mul, ←pow_two] at this
 
 -- (vii)
-example : 0 ≤ a → a < b → 0 ≤ c → c < d → a*c < b*d :=
-assume anonneg altb cnonneg cltd,
+example : 0 < a → a < 1 → a^2 < a :=
+assume apos altone,
+have a * a < 1 * a, from (mul_lt_mul_right apos).elim_right altone,
+show a^2 < a, by rwa [one_mul, ←pow_two] at this
+
+-- (viii),
+def p5viii : 0 ≤ a → 0 ≤ c → a < b → c < d → a*c < b*d :=
+assume anonneg cnonneg altb cltd,
 have dpos : 0 < d, from gt_of_gt_of_ge cltd cnonneg,
 have bpos : 0 < b, from gt_of_gt_of_ge altb anonneg,
 have bdpos : 0 < b*d, from mul_pos bpos dpos,
@@ -79,3 +85,17 @@ have h1 : a*c < b*c, from (mul_lt_mul_right h_1).elim_right altb,
 have h2 : b*c < b*d, from (mul_lt_mul_left bpos).elim_right cltd,
 exact lt_trans h1 h2
 end
+
+-- (ix)
+example : 0 ≤ a → a < b → a^2 < b^2 :=
+assume anonneg altb,
+have a * a < b * b, from p5viii anonneg anonneg altb altb,
+by rwa [←pow_two, ←pow_two] at this
+
+-- (x)
+example : 0 ≤ a → 0 ≤ b → a^2 < b^2 → a < b :=
+assume anonneg bnonneg asqltbsq,
+have unpowed : a * a < b * b, by rwa [pow_two, pow_two] at asqltbsq,
+have asqnonneg : 0 ≤ a^2, from pow_nonneg anonneg 2,
+have bsqpos : 0 < b^2, from gt_of_gt_of_ge asqltbsq asqnonneg,
+sorry
