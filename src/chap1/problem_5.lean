@@ -87,7 +87,7 @@ exact lt_trans h1 h2
 end
 
 -- (ix)
-example : 0 ≤ a → a < b → a^2 < b^2 :=
+def p5ix : 0 ≤ a → a < b → a^2 < b^2 :=
 assume anonneg altb,
 have a * a < b * b, from p5viii anonneg anonneg altb altb,
 by rwa [←pow_two, ←pow_two] at this
@@ -95,7 +95,15 @@ by rwa [←pow_two, ←pow_two] at this
 -- (x)
 example : 0 ≤ a → 0 ≤ b → a^2 < b^2 → a < b :=
 assume anonneg bnonneg asqltbsq,
-have unpowed : a * a < b * b, by rwa [pow_two, pow_two] at asqltbsq,
-have asqnonneg : 0 ≤ a^2, from pow_nonneg anonneg 2,
-have bsqpos : 0 < b^2, from gt_of_gt_of_ge asqltbsq asqnonneg,
-sorry
+lt_of_not_ge $ λ hab, (
+    or.elim (eq_or_lt_of_le hab)
+        (λ h,
+            have h1 : a^2 = b^2, from congr_fun (congr_arg pow (eq.symm h)) 2,
+            have h2 : a^2 ≠ b^2, from ne_of_lt asqltbsq,
+            h2 h1
+        )
+        (λ h,
+            have b^2 < a^2, from p5ix bnonneg h,
+            not_lt_of_lt this asqltbsq
+        )
+)
