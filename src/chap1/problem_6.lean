@@ -74,7 +74,6 @@ theorem odd_pow_lt : ∀ (n : ℕ), a < b → n % 2 = 1 → a^n < b^n
         (λ azero,
             or.elim3 (decidable.lt_trichotomy 0 b)
                 (λ bpos, positiveCase (le_of_eq azero) bpos)
-                -- If b is zero or negative, a<b can't be true.
                 (λ bzero,
                     have a = b, by rwa [←azero, ←bzero],
                     have a < a, by rwa [←this] at altb,
@@ -112,3 +111,58 @@ theorem odd_pow_lt : ∀ (n : ℕ), a < b → n % 2 = 1 → a^n < b^n
                     by assumption
                 )
         )
+
+-- (c)
+theorem pow_odd_eq : ∀ (n : ℕ), n % 2 = 1 → a^n = b^n → a = b
+| 0 zeroodd h := by contradiction
+| 1 oneodd h :=
+    have h1 : a^1 = a, by rw pow_one,
+    have h2 : b^1 = b, by rw pow_one,
+    by rwa [←h1, ←h2]
+| n nodd h := begin
+    -- have ih : a^n = b^n → a = b, from pow_odd_eq n nodd,
+
+    -- neg_one_pow_eq_pow_mod_two
+
+    have ih : ((a^(n-2) = b^(n-2)) → (a = b)), from sorry,
+    have h : a^(n) = b^(n), from h,
+    -- have ih : a^(n-2) = b^(n-2) → a = b, from pow_odd_eq (n-2),
+    have nodd' : n % 2 = 1, from nodd,
+    sorry
+end
+
+
+-- | (n+3) nodd h :=
+--     have h : a^(n+3) = b^(n+3), from h,
+--     have nplusonepos : 0 < (n+1), by exact n.succ_pos,
+--     have nplusthreepos : 0 < (n+3), by exact (n + 2).succ_pos,
+--     have npredpos : 0 < (n+1), by exact nat.succ_pos n,
+--     have ih : a^(n+1) = b^(n+1) → a = b, from (λ h2, pow_odd_eq (n+1) nodd h2),
+--     or.elim3 (decidable.lt_trichotomy a 0)
+--         (λ aneg,
+--             or.elim3 (decidable.lt_trichotomy b 0)
+--                 (λ bneg, sorry)
+--                 (λ bzero, sorry)
+--                 (λ bpos, sorry)
+--         )
+--         (λ azero,
+--             or.elim (decidable.em (b = 0))
+--                 (λ bzero,
+--                     have apowzero : a^(n+1) = 0, by rwa [azero, zero_pow nplusonepos],
+--                     have bpowzero : b^(n+1) = 0, by rwa [bzero, zero_pow nplusonepos],
+--                     have anbn : a^(n+1) = b^(n+1), by rwa [apowzero, bpowzero],
+--                     ih anbn
+--                 )
+--                 (λ bnonzero,
+--                     have apowzero : a^(n+3) = 0, by rwa [azero, zero_pow nplusthreepos],
+--                     have b^(n+3) ≠ 0, by exact pow_ne_zero (n+3) bnonzero,
+--                     have a^(n+3) ≠ b^(n+3), from ne_of_eq_of_ne apowzero (ne.symm this),
+--                     by contradiction
+--                 )
+--         )
+--         (λ apos,
+--             or.elim3 (decidable.lt_trichotomy b 0)
+--                 (λ bneg, sorry)
+--                 (λ bzero, sorry)
+--                 (λ bpos, sorry)
+--         )
