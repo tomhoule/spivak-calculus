@@ -113,56 +113,113 @@ theorem odd_pow_lt : ∀ (n : ℕ), a < b → n % 2 = 1 → a^n < b^n
         )
 
 -- (c)
-theorem pow_odd_eq : ∀ (n : ℕ), n % 2 = 1 → a^n = b^n → a = b
-| 0 zeroodd h := by contradiction
-| 1 oneodd h :=
-    have h1 : a^1 = a, by rw pow_one,
-    have h2 : b^1 = b, by rw pow_one,
-    by rwa [←h1, ←h2]
-| n nodd h := begin
-    -- have ih : a^n = b^n → a = b, from pow_odd_eq n nodd,
+theorem pow_odd_eq : ∀ (n : ℕ), n % 2 = 1 → b^n = c^n → b = c :=
+assume (n : ℕ) (nodd : n % 2 = 1) (heq : b^n = c^n),
+by_contradiction $ λ hn, or.elim3 (lt_trichotomy b c)
+    (λ hbltc,
+        have b^n < c^n, from odd_pow_lt n hbltc nodd,
+        have b^n ≠ c^n, from ne_of_lt this,
+        false.elim $ absurd heq this
+    )
+    (λ h, by contradiction)
+    (λ hcltb,
+        have c^n < b^n, from odd_pow_lt n hcltb nodd,
+        have b^n ≠ c^n, from ne_of_gt this,
+        false.elim $ absurd heq this
+    )
 
-    -- neg_one_pow_eq_pow_mod_two
+-- (d)
+theorem even_pows : ∀ (n : ℕ), n % 2 = 0 → a^n = (-a)^n
+| 0 zeroeven := rfl
+| 1 oneeven := by contradiction
+| (n+2) neven := (
+    have neven : n % 2 = 0, from neven,
+    have ih : a^n = (-a)^n, from even_pows n neven,
+    have sq_eq : a^2 = (-a)^2, from eq.symm $ calc
+        (-a)^2  = (-a) * (-a) : pow_two (-a)
+            ... = a * a : by rw neg_mul_neg
+            ... = a^2 : by rw pow_two
+    ,
+    show a^(n+2) = (-a)^(n+2), from eq.symm $ calc
+        (-a)^(n+2)  = (-a)^n * (-a)^2 : pow_add (-a) n 2
+                ... = a^n * (-a)^2 : by rw ih
+                ... = a^n * a^2 : by rw sq_eq
+                ... = a^(n+2) : by rw pow_add
+)
 
-    have ih : ((a^(n-2) = b^(n-2)) → (a = b)), from sorry,
-    have h : a^(n) = b^(n), from h,
-    -- have ih : a^(n-2) = b^(n-2) → a = b, from pow_odd_eq (n-2),
-    have nodd' : n % 2 = 1, from nodd,
-    sorry
-end
 
-
--- | (n+3) nodd h :=
---     have h : a^(n+3) = b^(n+3), from h,
---     have nplusonepos : 0 < (n+1), by exact n.succ_pos,
---     have nplusthreepos : 0 < (n+3), by exact (n + 2).succ_pos,
---     have npredpos : 0 < (n+1), by exact nat.succ_pos n,
---     have ih : a^(n+1) = b^(n+1) → a = b, from (λ h2, pow_odd_eq (n+1) nodd h2),
---     or.elim3 (decidable.lt_trichotomy a 0)
---         (λ aneg,
---             or.elim3 (decidable.lt_trichotomy b 0)
---                 (λ bneg, sorry)
---                 (λ bzero, sorry)
---                 (λ bpos, sorry)
---         )
---         (λ azero,
---             or.elim (decidable.em (b = 0))
---                 (λ bzero,
---                     have apowzero : a^(n+1) = 0, by rwa [azero, zero_pow nplusonepos],
---                     have bpowzero : b^(n+1) = 0, by rwa [bzero, zero_pow nplusonepos],
---                     have anbn : a^(n+1) = b^(n+1), by rwa [apowzero, bpowzero],
---                     ih anbn
---                 )
---                 (λ bnonzero,
---                     have apowzero : a^(n+3) = 0, by rwa [azero, zero_pow nplusthreepos],
---                     have b^(n+3) ≠ 0, by exact pow_ne_zero (n+3) bnonzero,
---                     have a^(n+3) ≠ b^(n+3), from ne_of_eq_of_ne apowzero (ne.symm this),
---                     by contradiction
---                 )
---         )
---         (λ apos,
---             or.elim3 (decidable.lt_trichotomy b 0)
---                 (λ bneg, sorry)
---                 (λ bzero, sorry)
---                 (λ bpos, sorry)
---         )
+-- could be shortened by matching on positive/negative first, then whether b < c
+-- or reverse
+theorem pow_even_eq : ∀ (n : ℕ), 0 < n → n % 2 = 0 → b^n = c^n → (b = c ∨ b = -c) :=
+assume n npos neven h,
+have negcpowneq : (-c)^n = c^n, from eq.symm $ even_pows n neven,
+have negbpowneq : (-b)^n = b^n, from eq.symm $ even_pows n neven,
+or.elim (le_or_lt 0 b)
+    (λ bnonneg,
+        or.elim3 (lt_trichotomy b c)
+            (λ bltc,
+                have b^n < c^n, from pow_lt n npos bnonneg bltc,
+                have b^n ≠ c^n, from ne_of_lt this,
+                false.elim $ absurd h this
+            )
+            (λ beqc, or.inl beqc)
+            (λ cltb,
+                or.elim (le_or_lt 0 c)
+                    (λ cnonneg,
+                        have c^n < b^n, from pow_lt n npos cnonneg cltb,
+                        have b^n ≠ c^n, from ne_of_gt this,
+                        false.elim $ absurd h this
+                    )
+                    (λ cneg,
+                        have negcpos : 0 < -c, from neg_pos.elim_right cneg,
+                        or.elim3 (lt_trichotomy b (-c))
+                            (λ bltnegc,
+                                have b^n < (-c)^n, from pow_lt n npos bnonneg bltnegc,
+                                have b^n < c^n, by rwa negcpowneq at this,
+                                false.elim $ absurd h (ne_of_lt this)
+                            )
+                            (λ beqnegc, or.inr beqnegc)
+                            (λ negcltb,
+                                have (-c)^n < b^n, from pow_lt n npos (le_of_lt negcpos) negcltb,
+                                have c^n < b^n, by rwa negcpowneq at this,
+                                false.elim $ absurd h (ne_of_gt this)
+                            )
+                    )
+            )
+    )
+    (λ bneg,
+        have negbpos : 0 < -b, from neg_pos.elim_right bneg,
+        or.elim3 (lt_trichotomy (-b) c)
+            (λ (hbc : (-b) < c),
+                have (-b)^n < c^n, from pow_lt n npos (le_of_lt negbpos) hbc,
+                have b^n < c^n, by rwa [negbpowneq] at this,
+                false.elim $ absurd h (ne_of_lt this)
+            )
+            (λ hnegbeqc, or.inr $ eq_neg_of_eq_neg $ eq.symm hnegbeqc)
+            (λ (hbc : c < (-b)),
+                or.elim (le_or_lt 0 c)
+                    (λ cnonneg,
+                        have c^n < (-b)^n, from pow_lt n npos cnonneg hbc,
+                        have c^n < b^n, by rwa negbpowneq at this,
+                        false.elim $ absurd h (ne_of_gt this)
+                    )
+                    (λ cneg,
+                        have negcpos : 0 < -c, from neg_pos.elim_right cneg,
+                        or.elim3 (lt_trichotomy (-b) (-c))
+                            (λ (hlt: (-b < -c)),
+                                have (-b)^n < (-c)^n, from pow_lt n npos (le_of_lt negbpos) hlt,
+                                have b^n < c^n, by rwa [negcpowneq, negbpowneq] at this,
+                                false.elim $ absurd h (ne_of_lt this)
+                            )
+                            (λ h,
+                                have b = c, from neg_inj h,
+                                or.inl this
+                            )
+                            (λ (hlt : (-c) < (-b)),
+                                have (-c)^n < (-b)^n, from pow_lt n npos (le_of_lt negcpos) hlt,
+                                have c^n < b^n, by rwa [negcpowneq, negbpowneq] at this,
+                                false.elim $ absurd h (ne_of_gt this)
+                            )
+                    )
+            )
+    )
