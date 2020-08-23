@@ -115,7 +115,7 @@ theorem odd_pow_lt : ∀ (n : ℕ), a < b → n % 2 = 1 → a^n < b^n
 -- (c)
 theorem pow_odd_eq : ∀ (n : ℕ), n % 2 = 1 → b^n = c^n → b = c :=
 assume (n : ℕ) (nodd : n % 2 = 1) (heq : b^n = c^n),
-by_contradiction $ λ hn, or.elim3 (lt_trichotomy b c)
+by_contradiction $ λ (hn : b ≠ c), or.elim3 (lt_trichotomy b c)
     (λ hbltc,
         have b^n < c^n, from odd_pow_lt n hbltc nodd,
         have b^n ≠ c^n, from ne_of_lt this,
