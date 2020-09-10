@@ -135,8 +135,8 @@ def cube_cube_add : a^3 + b^3 = (a + b) * (a^2 - (a * b) + b^2) :=
 calc
     a^3 + b^3   = a^3 + - -(b^3) : by rw [neg_neg]
             ... = a^3 - -(b^3) : rfl
-            ... = a^3 - -b^3 : by simp only [pow_succ, neg_mul_eq_neg_mul_symm, mul_neg_eq_neg_mul_symm, neg_neg, pow_zero]
-            ... = (a - -b) * (a^2 + a * -b + -b^2) : by rw cube_cube_sub
-            ... = (a + b) * (a^2 + a * -b + -b^2) : by rw sub_neg_eq_add
+            ... = a^3 - (-b)^3 : by simp only [pow_succ, neg_mul_eq_neg_mul_symm, mul_neg_eq_neg_mul_symm, neg_neg, pow_zero]
+            ... = (a - (-b)) * (a^2 + a * -b + (-b)^2) : by rw [@cube_cube_sub]
+            ... = (a + b) * (a^2 + a * -b + (-b)^2) : by rw sub_neg_eq_add
             ... = (a + b) * (a^2 + -(a * b) + b^2) : by simp only [mul_neg_eq_neg_mul_symm, neg_square]
             ... = (a + b) * (a^2 - (a*b) + b^2) : rfl

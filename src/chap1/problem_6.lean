@@ -32,7 +32,7 @@ theorem pow_lt : ∀ (n : ℕ), 0 < n → 0 ≤ a → a < b → a^n < b^n
 
 theorem neg_pow_odd : ∀ (n : ℕ), a < 0 → n % 2 = 1 → a^n < 0 :=
 assume n aneg nodd,
-have (-1 : α)^n = -1^(n%2), from neg_one_pow_eq_pow_mod_two,
+have (-1 : α)^n = (-1)^(n%2), from neg_one_pow_eq_pow_mod_two,
 have oddpow : (-1 : α)^n = -1, by rwa [nodd, pow_one] at this,
 have a^n = (1 * a)^n, by rw [one_mul],
 have a^n = (-1 * -a)^n, by rwa [←neg_mul_neg] at this,
@@ -212,7 +212,7 @@ or.elim (le_or_lt 0 b)
                                 false.elim $ absurd h (ne_of_lt this)
                             )
                             (λ h,
-                                have b = c, from neg_inj h,
+                                have b = c, from neg_inj.elim_left h,
                                 or.inl this
                             )
                             (λ (hlt : (-c) < (-b)),

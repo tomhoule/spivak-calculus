@@ -12,7 +12,7 @@ calc
     a / b   = a * b⁻¹ : rfl
         ... = a * b⁻¹ * (c * c⁻¹) : by simp only [mul_inv_cancel cnotzero, mul_one]
         ... = a * c * (b⁻¹ * c⁻¹) : by simp only [mul_assoc, mul_comm c]
-        ... = a * c * (b * c)⁻¹ : by rw [mul_inv'']
+        ... = a * c * (b * c)⁻¹ : by rw [mul_inv']
         ... = (a*c) / (b*c) : rfl
 
 -- (ii)
@@ -23,7 +23,7 @@ calc
                 ... = a * b⁻¹ * (d * d⁻¹) + c * d⁻¹ * (b * b⁻¹) : by simp only [mul_inv_cancel dnotzero, mul_inv_cancel bnotzero, mul_one]
                 ... = (a * d) * (b⁻¹ * d⁻¹) + c * d⁻¹ * (b * b⁻¹) : by simp only [mul_comm d, mul_assoc]
                 ... = (a * d) * (b⁻¹ * d⁻¹) + b * c * (b⁻¹ * d⁻¹) : by simp only [mul_comm, mul_mul_mul_comm]
-                ... = (a * d) * (b * d)⁻¹ + (b * c) * (b * d)⁻¹ : by simp only [mul_inv'']
+                ... = (a * d) * (b * d)⁻¹ + (b * c) * (b * d)⁻¹ : by simp only [mul_inv']
                 ... = (a * d + b * c) * (b * d)⁻¹ : by rw [add_mul]
                 ... = (a*d + b*c) / (b*d) : rfl
 
@@ -50,11 +50,11 @@ calc
 def my_inv_inv : a ≠ 0 → (a⁻¹)⁻¹ = a :=
 assume anzero,
 calc
-    (a⁻¹)⁻¹ = a * a⁻¹ * (a⁻¹)⁻¹ : by simp only [mul_inv_mul_self, inv_inv'']
+    (a⁻¹)⁻¹ = a * a⁻¹ * (a⁻¹)⁻¹ : by simp only [mul_inv_mul_self, inv_inv']
         ... = a * (a⁻¹ * (a⁻¹)⁻¹) : by rw mul_assoc
-        ... = a * (a * (a⁻¹))⁻¹ : by rw mul_inv''
+        ... = a * (a * (a⁻¹))⁻¹ : by rw mul_inv'
         ... = a * 1⁻¹ : by rw mul_inv_cancel anzero
-        ... = a : by simp only [inv_one', mul_one]
+        ... = a : by simp only [inv_one, mul_one]
 
 --- (v)
 def my_div_div : b ≠ 0 → c ≠ 0 → d ≠ 0 → (a/b) / (c/d) = (a*d)/(b*c) :=
@@ -62,10 +62,10 @@ assume bnzero cnzero dnzero,
 calc
     (a/b) / (c/d)   = (a*b⁻¹) / (c*d⁻¹) : rfl
                 ... = (a*b⁻¹) * (c*d⁻¹)⁻¹ : rfl
-                ... = (a*b⁻¹) * (c⁻¹*(d⁻¹)⁻¹) : by rw [mul_inv'']
-                ... = (a*b⁻¹) * (c⁻¹*d) : by simp only [inv_inv'']
+                ... = (a*b⁻¹) * (c⁻¹*(d⁻¹)⁻¹) : by rw [mul_inv']
+                ... = (a*b⁻¹) * (c⁻¹*d) : by simp only [inv_inv']
                 ... = (a*d) * (b⁻¹ * c⁻¹) : by simp only [mul_assoc, mul_comm d]
-                ... = (a*d) * (b*c)⁻¹ : by rw mul_inv''
+                ... = (a*d) * (b*c)⁻¹ : by rw mul_inv'
                 ... = (a*d)/(b*c) : rfl
 
 -- (vi)
