@@ -4,6 +4,8 @@ import tactic.suggest
 
 open real (sqrt)
 
+variables { a b c x y : ℝ }
+
 def lt_cast_int_to_real : ∀ (a b : ℤ), a < b → (a : ℝ) < (b : ℝ) :=
 assume a b h,
 have (↑a : ℚ) < ↑b, from int.cast_lt.elim_right h,
@@ -17,7 +19,6 @@ have (↑a : ℚ) ≤ ↑b, from int.cast_le.elim_right h,
 have (↑↑a: ℝ) ≤ ↑↑b, from rat.cast_le.elim_right this,
 have (↑a : ℝ) ≤ ↑b, from by rwa [rat.cast_coe_int, rat.cast_coe_int] at this,
 this
-
 
 example : abs (sqrt (2 : ℝ) + sqrt 3 - sqrt 5 + sqrt 7) = sqrt 2 + sqrt 3 - sqrt 5 + sqrt 7 :=
 have 0 ≤ sqrt (2 : ℝ) + sqrt 3 - sqrt 5 + sqrt 7, from (
@@ -42,3 +43,31 @@ have 0 ≤ sqrt (2 : ℝ) + sqrt 3 - sqrt 5 + sqrt 7, from (
     by rwa [h1, h2]
 ),
 abs_of_nonneg this
+
+example : abs (abs (a + b) - (abs a) - (abs b)) = -(abs (a + b) - (abs a) - (abs b)) :=
+have abs (a + b) - (abs a) - (abs b) ≤ 0, from (
+    have l1 : abs (a + b) - (abs a) - (abs b) = abs (a + b) - (abs a + abs b), from sub_sub (abs (a + b)) (abs a) (abs b),
+    have abs (a + b) ≤ (abs a + abs b), from abs_add a b,
+    have abs (a + b) - (abs a + abs b) ≤ 0, by rwa [sub_nonpos],
+    by rwa [←l1] at this
+),
+abs_of_nonpos this
+
+-- (iii)
+example : abs ((abs a + b) + (abs c) - (abs (a + b + c))) = (abs a + b) + (abs c) - (abs (a + b + c)) :=
+have l1: a + b ≤ abs (a + b), from le_abs_self (a + b),
+have l2: c ≤ abs c, from le_abs_self c,
+have abs (a + b + c) ≤ abs (a + b) + c, from sorry, -- see abs_add_three
+have abs (a + b + c) ≤ (abs a + b) + (abs c), from (
+    sorry
+),
+have 0 ≤ (abs a + b) + (abs c) - abs (a + b + c), by rwa [sub_nonneg],
+abs_of_nonneg this
+
+-- (iv)
+example : abs (x^2 - 2*(x*y) + y^2) = 1 :=
+have x^2 - 2*(x*y) + y^2 = (x - y)^2, by library_search,
+sorry
+
+-- (v)
+example : abs (abs (sqrt 2 + sqrt 3) - abs (sqrt 5 - sqrt 7)) = 1 := sorry
