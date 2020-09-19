@@ -96,23 +96,15 @@ have (abs x)⁻¹ = abs (1/x), from (
 ),
 eq.symm $ by rwa [one_div]
 
--- have l2 : 0 < (abs x)⁻¹, from inv_pos.mpr absxpos,
--- eq.symm $ calc
---     1/(abs x)   = (abs x)⁻¹ : one_div (abs x)
---             ... = abs ((abs x)⁻¹) : by rw [abs_of_pos l2]
---             ... = abs (1/abs x) : by rw one_div
---             ... = abs (abs 1/abs x) : by rw abs_one
-            -- ... = abs (1/x) : by rw abs_div
-
--- have l1 : 1/x = x⁻¹, from one_div x,
--- have l2 : 1/abs x = (abs x)⁻¹, from one_div (abs x),
--- or.elim (le_or_gt 0 x)
---     (λ xnonneg,
-
---     )
---     sorry
-
-def iii : y ≠ 0 → abs x / abs y = abs (x/y) := sorry
+def iii : y ≠ 0 → abs x / abs y = abs (x/y) :=
+assume ynonzero,
+have 0 < abs y, from abs_pos_iff.mpr ynonzero,
+have absynonzero : 0 ≠ abs y, from ne_of_lt this,
+calc
+    abs x / abs y   = abs x * (1/(abs y)) : by rw [div_eq_mul_one_div]
+                ... = abs x * abs (1/y) : by rw [ii ynonzero]
+                ... = abs (x * (1/y)) : by rw abs_mul
+                ... = abs (x/y) : by simpa only [one_div]
 
 def iv : abs (x - y) ≤ abs x + abs y := sorry
 
