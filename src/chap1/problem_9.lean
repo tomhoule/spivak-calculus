@@ -54,20 +54,38 @@ have abs (a + b) - (abs a) - (abs b) ≤ 0, from (
 abs_of_nonpos this
 
 -- (iii)
-example : abs ((abs a + b) + (abs c) - (abs (a + b + c))) = (abs a + b) + (abs c) - (abs (a + b + c)) :=
+example : abs (abs (a + b) + abs c - abs (a + b + c)) = abs (a + b) + abs c - abs (a + b + c) :=
 have l1: a + b ≤ abs (a + b), from le_abs_self (a + b),
 have l2: c ≤ abs c, from le_abs_self c,
-have abs (a + b + c) ≤ abs (a + b) + c, from sorry, -- see abs_add_three
-have abs (a + b + c) ≤ (abs a + b) + (abs c), from (
-    sorry
-),
-have 0 ≤ (abs a + b) + (abs c) - abs (a + b + c), by rwa [sub_nonneg],
+have abs (a + b + c) ≤ abs (a + b) + (abs c), from abs_add (a + b) c,
+have 0 ≤ abs (a + b) + (abs c) - abs (a + b + c), from sub_nonneg.mpr this,
 abs_of_nonneg this
 
 -- (iv)
-example : abs (x^2 - 2*(x*y) + y^2) = 1 :=
-have x^2 - 2*(x*y) + y^2 = (x - y)^2, by library_search,
-sorry
+example : abs (x^2 - 2*(x*y) + y^2) = x^2 - 2*(x*y) + y^2 :=
+have l1 : x^2 - 2*(x*y) + y^2 = (x - y)^2, by linarith,
+have 0 ≤ (x - y)^2, from pow_two_nonneg (x-y),
+have 0 ≤ x^2 - 2*(x*y) + y^2, by rwa [l1],
+abs_of_nonneg this
 
 -- (v)
-example : abs (abs (sqrt 2 + sqrt 3) - abs (sqrt 5 - sqrt 7)) = 1 := sorry
+example : abs (abs (sqrt 2 + sqrt 3) - abs (sqrt 5 - sqrt 7)) = abs (sqrt 2 + sqrt 3 + (sqrt 5 - sqrt 7)) :=
+-- First the first term of the subtraction
+have sqrt2nonneg : 0 ≤ sqrt 2, from real.sqrt_nonneg 2,
+have sqrt3nonneg : 0 ≤ sqrt 3, from real.sqrt_nonneg 3,
+have 0 ≤ (sqrt 2 + sqrt 3), from add_nonneg sqrt2nonneg sqrt3nonneg,
+have l1 : abs (sqrt 2 + sqrt 3) = sqrt 2 + sqrt 3, from abs_of_nonneg this,
+-- Now the second term
+have right : (sqrt 5 - sqrt 7) < 0, from (
+    have five : (0 : ℤ) ≤ (5 : ℤ), from sup_eq_left.mp rfl,
+    have seven : (0 : ℤ) ≤ (7 : ℤ), from sup_eq_left.mp rfl,
+    have h : 5 < 7, from nat.lt_of_sub_eq_succ rfl,
+    have (5 : ℤ) < 7, by exact nat.cast_lt.mpr h,
+    have (↑5 : ℝ) < ↑7, from lt_cast_int_to_real 5 7 this,
+    have sqrt ↑5 < sqrt ↑7, from (real.sqrt_lt (le_cast_int_to_real 0 5 five) (le_cast_int_to_real 0 7 seven)).elim_right this,
+    have (sqrt ↑5 - sqrt ↑7) < 0, from sub_lt_zero.mpr this,
+    by simpa only [nat.cast_bit0, nat.cast_bit1, nat.cast_one]
+),
+have l2 : abs (sqrt 5 - sqrt 7) = - (sqrt 5 - sqrt 7), from abs_of_neg right,
+have abs (abs (sqrt 2 + sqrt 3) - abs (sqrt 5 - sqrt 7)) = abs (sqrt 2 + sqrt 3 - -(sqrt 5 - sqrt 7)), by rwa [l1, l2],
+by rwa [sub_neg_eq_add] at this
