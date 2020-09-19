@@ -123,20 +123,76 @@ begin
 end
 
 -- (ii)
-example : abs (abs x - 1) = 1 := sorry
+example :
+abs (abs x - 1) = x - 1 ∨
+abs (abs x - 1) = -x + 1 ∨
+abs (abs x - 1) = -x - 1 ∨
+abs (abs x - 1) = x + 1 :=
+or.elim (le_or_gt 0 x)
+    (λ xnonneg,
+        or.elim (le_or_gt 0 (x - 1))
+            (λ nonneg,
+                have abs (abs x - 1) = x - 1, by rw [abs_of_nonneg xnonneg, abs_of_nonneg nonneg],
+                or.inl this
+            )
+            (λ neg,
+                have abs (abs x - 1) = -(x-1), by rw [abs_of_nonneg xnonneg, abs_of_neg neg],
+                or.inr $ or.inl (by linarith)
+            )
+    )
+    (λ xneg,
+        or.elim (le_or_gt 0 (-x-1))
+            (λ nonneg,
+                have abs (abs x - 1) = -x-1, by rw [abs_of_neg xneg, abs_of_nonneg nonneg],
+                or.inr $ or.inr $ or.inl this
+            )
+            (λ neg,
+                have abs (abs x - 1) = -(-x-1), by rw [abs_of_neg xneg, abs_of_neg neg],
+                or.inr $ or.inr $ or.inr (by linarith)
+            )
+    )
 
 -- (iii)
 example :
 abs x - abs (x^2) = x - x^2 ∨
-abs x - abs (x^2) = x + x^2 :=
-have 0 ≤ x^2, from pow_two_nonneg x,
-have l1: abs (x^2) = x^2, from abs_of_nonneg this,
--- if x is negative, abs x - x^2 = -x - x^2
-or.elim (lt_or_ge 0 x)
-    sorry
-    sorry
+abs x - abs (x^2) = -x - x^2 :=
+have l1 : 0 ≤ x^2, from pow_two_nonneg x,
+or.elim (le_or_gt 0 x)
+    (λ xnonneg,
+        have abs x - abs (x^2) = x - x^2, by rw [abs_of_nonneg xnonneg, abs_of_nonneg l1],
+        or.inl this
+    )
+    -- if x is negative, abs x - x^2 = -x - x^2
+    (λ xneg,
+        have abs x - abs (x^2) = -x - x^2, by rw [abs_of_neg xneg, abs_of_nonneg l1],
+        or.inr this
+    )
 
 -- (iv)
 example :
-a - abs (a - abs a) = 1 :=
-sorry
+a - abs (a - abs a) = a ∨
+a - abs (a - abs a) = 3*a
+:=
+or.elim (le_or_gt 0 a)
+    (λ anonneg,
+        have a - abs (a - abs a) = a, from (
+            calc
+            a - abs (a - abs a) = a - abs (a - a) : by rw [abs_of_nonneg anonneg]
+                            ... = a - abs 0 : by rw [sub_self]
+                            ... = a : by rw [abs_zero, sub_zero]
+        ),
+        or.inl this
+    )
+    (λ aneg,
+        have a - abs (a - abs a) = 3*a, from (
+            have twoaneg : 2*a < 0, by linarith,
+            calc
+            a - abs (a - abs a) = a - abs (a - -a) : by rw [abs_of_neg aneg]
+                            ... = a - abs (a + a) : by rw [sub_neg_eq_add]
+                            ... = a - abs (2*a) : by rw [two_mul]
+                            ... = a - -(2*a) : by rw [abs_of_neg twoaneg]
+                            ... = a + (2*a) : by rw sub_neg_eq_add
+                            ... = 3*a : by linarith
+        ),
+        or.inr this
+    )
