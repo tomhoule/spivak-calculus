@@ -7,6 +7,9 @@ open real (sqrt)
 variables { a b c x y : ℝ }
 
 -- (i)
+
+-- The proof could be made much smaller by using le_or_gt instead of
+-- lt_trichotomy all over the place.
 example :
 abs (a + b) - abs b = a ∨
 abs (a + b) - abs b = -a ∨
@@ -18,13 +21,9 @@ have l1 : (b = 0) → (abs (a + b) - abs b = a ∨ abs (a + b) - abs b = -a), fr
         abs (a + b) - abs b = abs (a + 0) - abs 0 : by rw [bzero]
                         ... = abs a - 0 : by rw [add_zero, abs_zero]
                         ... = abs a : by rw [sub_zero],
-    or.elim3 (lt_trichotomy 0 a)
-        (λ apos,
-            have abs a = a, from abs_of_pos apos,
-            or.inl (by rwa [this] at h)
-        )
-        (λ azero,
-            have abs a = a, by rwa [←azero, abs_zero],
+    or.elim (le_or_gt 0 a)
+        (λ anonneg,
+            have abs a = a, from abs_of_nonneg anonneg,
             or.inl (by rwa [this] at h)
         )
         (λ aneg,
