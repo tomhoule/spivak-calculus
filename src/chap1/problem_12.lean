@@ -67,7 +67,50 @@ or.elim (le_or_gt 0 x)
             )
     )
 
-def ii : x ≠ 0 → abs (1/x) = 1/(abs x) := sorry
+def ii : x ≠ 0 → abs (1/x) = 1/(abs x) :=
+assume xnonzero,
+have absxpos : 0 < abs x, from abs_pos_iff.mpr xnonzero,
+have absxnonzero : 0 ≠ abs x, from ne_of_lt absxpos,
+have l1 : (abs x) * (abs x)⁻¹ = 1, from mul_inv_cancel (ne.symm absxnonzero),
+have l2 : 0 < x*x, from mul_self_pos xnonzero,
+have l3 : 0 < 1/(x*x), from one_div_pos.mpr l2,
+have l4 : (1/(x*x)) * x = 1/x, from (
+    calc
+    (1/(x*x)) * x   = (1/(x*x)) * (x/1) : by rw [div_one]
+                ... = (1*x)/(x*x*1) : by rw [div_mul_div]
+                ... = x / (x*x) : by rw [mul_one, one_mul]
+                ... = 1/x : div_mul_left xnonzero
+),
+have (abs x)⁻¹ = abs (1/x), from (
+    calc
+    (abs x)⁻¹   = (abs x)⁻¹ * 1 : by rw mul_one
+            ... = (abs x)⁻¹ * (abs x * (abs x)⁻¹) : by rw l1
+            ... = (abs x)⁻¹ * (abs x)⁻¹ * abs x : by simp only [mul_assoc, mul_comm (abs x)]
+            ... = 1/(abs x) * (1/(abs x)) * abs x : by rw [←one_div (abs x)]
+            ... = 1/((abs x) * (abs x)) * abs x : by rw [div_mul_div, one_mul]
+            ... = 1/(abs (x * x)) * abs x : by rw [abs_mul]
+            ... = 1/(x * x) * abs x : by rw [abs_of_pos l2]
+            ... = abs (1/(x * x)) * abs x : by rw [abs_of_pos l3]
+            ... = abs (1/(x * x) * x) : by rw [abs_mul]
+            ... = abs (1/x) : by rw l4
+),
+eq.symm $ by rwa [one_div]
+
+-- have l2 : 0 < (abs x)⁻¹, from inv_pos.mpr absxpos,
+-- eq.symm $ calc
+--     1/(abs x)   = (abs x)⁻¹ : one_div (abs x)
+--             ... = abs ((abs x)⁻¹) : by rw [abs_of_pos l2]
+--             ... = abs (1/abs x) : by rw one_div
+--             ... = abs (abs 1/abs x) : by rw abs_one
+            -- ... = abs (1/x) : by rw abs_div
+
+-- have l1 : 1/x = x⁻¹, from one_div x,
+-- have l2 : 1/abs x = (abs x)⁻¹, from one_div (abs x),
+-- or.elim (le_or_gt 0 x)
+--     (λ xnonneg,
+
+--     )
+--     sorry
 
 def iii : y ≠ 0 → abs x / abs y = abs (x/y) := sorry
 
