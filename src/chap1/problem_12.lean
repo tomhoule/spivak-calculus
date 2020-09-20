@@ -106,9 +106,14 @@ calc
                 ... = abs (x * (1/y)) : by rw abs_mul
                 ... = abs (x/y) : by simpa only [one_div]
 
-def iv : abs (x - y) ≤ abs x + abs y := sorry
+def iv : abs (x - y) ≤ abs x + abs y :=
+calc
+    abs (x - y) ≤ abs (x + -y) : by refl
+            ... ≤ abs x + abs (-y) : abs_add x (-y)
+            ... ≤ abs x + abs y : by rw [abs_neg]
 
-def v : abs x - abs y ≤ abs (x-y) := sorry
+def v : abs x - abs y ≤ abs (x - y) :=
+sorry
 
 def vi : abs (abs x - abs y) ≤ abs (x-y) := sorry
 
