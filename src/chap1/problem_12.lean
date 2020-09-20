@@ -119,6 +119,18 @@ have abs x ≤ abs y + abs (y-x), by rwa [add_comm y x, add_sub_assoc, sub_self 
 have abs x - abs y ≤ abs (y-x), by linarith,
 by rwa [abs_sub]
 
-def vi : abs (abs x - abs y) ≤ abs (x-y) := sorry
+def vi : abs (abs x - abs y) ≤ abs (x - y) :=
+or.elim (le_or_gt 0 (abs x - abs y))
+    (λ absxynonneg,
+        have l1 : abs (abs x - abs y) = abs x - abs y, from abs_of_nonneg absxynonneg,
+        have abs x - abs y ≤ abs (x - y), from v,
+        by rwa [←l1] at this
+    )
+    (λ absxyneg,
+        have abs (abs x - abs y) = -(abs x - abs y), from abs_of_neg absxyneg,
+        have l1 : abs (abs x - abs y) = abs y - abs x, by linarith,
+        have abs y - abs x ≤ abs (y - x), from v,
+        show abs (abs x - abs y) ≤ abs (x-y), by rwa [←l1, abs_sub y x] at this
+    )
 
 def vii : abs (x + y + z) ≤ abs x + abs y + abs z := sorry
