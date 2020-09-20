@@ -113,6 +113,7 @@ calc
             ... ≤ abs x + abs y : by rw [abs_neg]
 
 def v : abs x - abs y ≤ abs (x - y) :=
+have abs (x - (x-y)) ≤ abs x + abs (x-y), from iv,
 sorry
 
 def vi : abs (abs x - abs y) ≤ abs (x-y) := sorry
