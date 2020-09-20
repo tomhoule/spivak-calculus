@@ -113,8 +113,11 @@ calc
             ... ≤ abs x + abs y : by rw [abs_neg]
 
 def v : abs x - abs y ≤ abs (x - y) :=
-have abs (x - (x-y)) ≤ abs x + abs (x-y), from iv,
-sorry
+have abs (y - (y-x)) ≤ abs y + abs (y-x), from iv,
+have abs (y + x - y) ≤ abs y + abs (y-x), by rwa [sub_sub_assoc_swap] at this,
+have abs x ≤ abs y + abs (y-x), by rwa [add_comm y x, add_sub_assoc, sub_self y, add_zero x] at this,
+have abs x - abs y ≤ abs (y-x), by linarith,
+by rwa [abs_sub]
 
 def vi : abs (abs x - abs y) ≤ abs (x-y) := sorry
 
