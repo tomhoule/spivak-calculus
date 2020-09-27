@@ -1,7 +1,5 @@
 import data.real.basic
 import tactic.basic
-import tactic.noncomm_ring
-import tactic.algebra
 
 variables { x y z : ℝ }
 
