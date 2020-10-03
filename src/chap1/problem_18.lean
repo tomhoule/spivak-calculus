@@ -55,6 +55,14 @@ have l2 : 0 ≤ (x + (b/2))^2, from pow_two_nonneg (x + b / 2),
 have 0 < (x + (b/2))^2 + (c - (b^2)/4), from lt_add_of_le_of_pos l2 l1,
 by rwa [←completeTheSquare] at this
 
+def part_b' : (∀ x, 0 < x^2 + b*x + c) → b^2 - 4*c < 0 :=
+λ h,
+have ¬(0 ≤ b^2 - 4*c), from (
+    λ h,
+    have ∃ x, x^2 + b*x + c < 0, from sorry,
+    sorry
+),
+not_le.elim_left this
 
 -- (c)
 
@@ -99,3 +107,7 @@ or.elim this
         have 0 < x^2 + (α*y)*x + y^2, from @part_b (α*y) (y^2) x this,
         by linarith only [this]
     )
+
+-- (e)
+
+-- TODO
