@@ -123,8 +123,9 @@ def schwarz_1 : ¬(y1 = 0 ∧ y2 = 0) →
 ¬(∃ a, x1 = a * y1 ∧ x2 = a * y2) →
 x1*y1 + x2*y2 < sqrt (x1^2 + x2^2) * sqrt (y1^2 + y2^2) :=
 assume h1 h2,
+-- WICHTIG
 have l1 : 0 < a^2*(y1^2+y2^2) - 2*a*(x1*y1 + x2*y2) + (x1^2 + x2^2), from schwarz_1_helper_2 h1 h2,
-have l2 : a^2*(y1^2+y2^2) - 2*a*(x1*y1 + x2*y2) + (x1^2 + x2^2) = (a*y1 - x1)^2 + (a*y2 - x2)^2, by linarith,
+
 have sumYNonneg : 0 ≤ y1^2 + y2^2, by simp only [pow_two_nonneg, add_nonneg],
 have sumXNonneg : 0 ≤ x1^2 + x2^2, by simp only [pow_two_nonneg, add_nonneg],
 have sqrtYSum : (sqrt (y1^2 + y2^2))^2 = y1^2 + y2^2, from real.sqr_sqrt sumYNonneg,
@@ -161,6 +162,9 @@ let x := a * (y1^2 + y2^2),
     b := (x1*y1 + x2*y2) / (y1^2 + y2^2),
     c := x1^2 + x2^2
 in
+-- x^2 + b*x + c := sqrt (y1^2 + y2^2) + (sqrt (x1^2 + x2^2)) + ((x1*y1 + x2*y2)
+-- - sqrt y1^2 + y2^2)
+-- λsqrt(y1^2+y2^2)
 sorry
 
 -- have middle : (y1^2+y2^2) * (x1^2 + x2^2) = (y1*x1)^2 + (y1*x2)^2 + (y2*x1)^2 + (y2*x2)^2, by linarith,
