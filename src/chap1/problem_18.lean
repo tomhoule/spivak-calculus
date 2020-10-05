@@ -43,17 +43,29 @@ partA.mk (λ (b : ℝ) (c : ℝ) h,
 
 -- (b)
 
-def part_b : ∀ (x : ℝ), b^2 - 4*c < 0 → 0 < x^2 + b*x + c :=
-λ x h,
-have completeTheSquare : x^2 + b*x + c = (x + (b/2))^2 + (c - (b^2)/4), from (
+def part_b : b^2 - 4*c < 0 ↔ ∀ (x : ℝ), 0 < x^2 + b*x + c :=
+have completeTheSquare : ∀ x, x^2 + b*x + c = (x + (b/2))^2 + (c - (b^2)/4), from (
+    assume x,
     have l1 : (x + (b/2))^2 = x^2 + (b^2)/4 + b*x, by ring,
     have (x + (b/2))^2 + (c - (b^2)/4) = x^2 + (b^2)/4 + b*x + (c - (b^2)/4), by rw [<-l1],
     by linarith only [this]
 ),
-have l1 : 0 < (c - (b^2)/4), by linarith only [h],
-have l2 : 0 ≤ (x + (b/2))^2, from pow_two_nonneg (x + b / 2),
-have 0 < (x + (b/2))^2 + (c - (b^2)/4), from lt_add_of_le_of_pos l2 l1,
-by rwa [←completeTheSquare] at this
+iff.intro
+    (
+        λ h x,
+        have l1 : 0 < (c - (b^2)/4), by linarith only [h],
+        have l2 : 0 ≤ (x + (b/2))^2, from pow_two_nonneg (x + b / 2),
+        have 0 < (x + (b/2))^2 + (c - (b^2)/4), from lt_add_of_le_of_pos l2 l1,
+        by rwa [←completeTheSquare] at this
+    )
+    (
+        λ (h : ∀ (x : ℝ), 0 < x^2 + b*x + c),
+        have 0 < (-b/2)^2 + b*(-b/2) + c, from h ((-b/2)),
+        have l1 : 0 < ((-b/2) + (b/2))^2 + (c - (b^2)/4), by rwa [completeTheSquare] at this,
+        have ((-b/2) + (b/2))^2 = 0, by ring,
+        have 0 < (c - (b^2)/4), by rwa [this, zero_add] at l1,
+        show b^2 - 4*c < 0, by linarith
+    )
 
 -- (c)
 
@@ -64,13 +76,13 @@ or.elim this
     (λ xNonzero,
         have 0 < x^2, from pow_two_pos_of_ne_zero x xNonzero,
         have x^2 - 4*(x^2) < 0, by linarith only [this],
-        have 0 < y^2 + x*y + x^2, from @part_b x (x^2) y this,
+        have 0 < y^2 + x*y + x^2, from (@part_b x (x^2)).elim_left this y,
         by linarith only [this]
     )
     (λ yNonzero,
         have 0 < y^2, from pow_two_pos_of_ne_zero y yNonzero,
         have y^2 - 4*(y^2) < 0, by linarith only [this],
-        have 0 < x^2 + y*x + y^2, from @part_b y (y^2) x this,
+        have 0 < x^2 + y*x + y^2, from (@part_b y (y^2)).elim_left this x,
         by rwa [mul_comm y x] at this
     )
 
@@ -88,14 +100,14 @@ or.elim this
         have α^2 * x^2 < 4*x^2, from mul_lt_mul lsq (le_of_eq rfl) (pow_two_pos_of_ne_zero x xNonzero) (by norm_num),
         have (α*x)^2 < 4*x^2, by linarith,
         have (α*x)^2 - 4*(x^2) < 0, from sub_lt_zero.mpr this,
-        have 0 < y^2 + (α*x)*y + x^2, from @part_b (α*x) (x^2) y this,
+        have 0 < y^2 + (α*x)*y + x^2, from (@part_b (α*x) (x^2)).elim_left this y,
         by linarith only [this]
     )
     (λ yNonzero,
         have α^2 * y^2 < 4*y^2, from mul_lt_mul lsq (le_of_eq rfl) (pow_two_pos_of_ne_zero y yNonzero) (by norm_num),
         have (α*y)^2 < 4*y^2, by linarith,
         have (α*y)^2 - 4*(y^2) < 0, from sub_lt_zero.mpr this,
-        have 0 < x^2 + (α*y)*x + y^2, from @part_b (α*y) (y^2) x this,
+        have 0 < x^2 + (α*y)*x + y^2, from (@part_b (α*y) (y^2)).elim_left this x,
         by linarith only [this]
     )
 
