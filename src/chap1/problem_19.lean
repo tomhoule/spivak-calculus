@@ -1,7 +1,4 @@
 import data.real.basic
-import algebra.ordered_field
-import algebra.group_with_zero_power
-import algebra.group
 import chap1.problem_18
 
 variables { x1 x2 y1 y2 a : ℝ }
@@ -82,6 +79,13 @@ have left : x1*y1 + x2*y2 = 0, by { rw [y1Zero, y2Zero], norm_num },
 have right : sqrt (x1^2 + x2^2) * sqrt (y1^2 + y2^2) = 0, by { rw [y1Zero, y2Zero], norm_num },
 eq.trans left (eq.symm right)
 
+def schwarz_equality_zero_x : x1 = 0 ∧ x2 = 0 → x1*y1 + x2*y2 = sqrt (x1^2 + x2^2) * sqrt (y1^2 + y2^2) :=
+λ ⟨x1Zero, x2Zero⟩,
+have left : x1*y1 + x2*y2 = 0, by { rw [x1Zero, x2Zero], norm_num },
+have right : sqrt (x1^2 + x2^2) * sqrt (y1^2 + y2^2) = 0, by { rw [x1Zero, x2Zero], norm_num },
+eq.trans left (eq.symm right)
+
+
 def schwarz_1_helper_1 :
 ¬(y1 = 0 ∧ y2 = 0) → ¬(∃ a, x1 = a * y1 ∧ x2 = a * y2) →
 0 < (a*y1 - x1)^2 + (a*y2 - x2)^2 :=
@@ -139,15 +143,18 @@ have sumYPos : 0 < y1^2 + y2^2, begin
 end,
 have sumYNonzero : y1^2 + y2^2 ≠ 0, from ne.symm $ ne_of_lt sumYPos,
 have sumYSquarePos : 0 < (y1^2 + y2^2)^2, from pow_pos sumYPos 2,
+
+-- Restate the previous result.
 have l1 : ∀ a, 0 < a^2*(y1^2+y2^2) - 2*a*(x1*y1 + x2*y2) + (x1^2 + x2^2), from λ a, schwarz_1_helper_2 a h1 h2,
+
+-- We now have to factorize the x out (more general than the a in the previous
+-- schema). We take a to be x, then (y1^2 + y2^2) * (a^2 + a*b + c). Then pos
+-- mul pos. What. The. Heck.
 let
-    -- we have to factorize the x out (more general than the a). We take a to be
-    -- x, then (y1^2 + y2^2) * (a^2 + a*b + c). Then pos mul pos. What. The.
-    -- Heck.
-    -- x :=
     b := (-2*(x1*y1+x2*y2)) / (y1^2+y2^2),
     c := (x1^2 + x2^2) / (y1^2+y2^2)
 in
+-- Factorize with a neat a^2+b*a+c
 have l2 : ∀ a, 0 < (y1^2+y2^2) * ((a^2) + b*a + c), from (
     λ a,
     have helper1 : ((x1^2 + x2^2) * (y1^2+y2^2) / (y1^2+y2^2)) = (y1^2+y2^2) * ((x1^2+x2^2) / (y1^2+y2^2)), by { ring },
@@ -167,17 +174,17 @@ have cPos : 0 < c, from (
     have 0 < 4*c, from gt_of_gt_of_ge l5 this,
     by linarith only [this]
 ),
-have x12Pos : 0 < (x1^2 + x2^2), from (
+have sumXSquarePos : 0 < (x1^2 + x2^2), from (
     have l1 : 0 < (x1^2 + x2^2) * (y1^2+y2^2)⁻¹, from calc
         0   < c : cPos
         ... = (x1^2 + x2^2) * (y1^2+y2^2)⁻¹ : division_def,
     have 0 < (y1^2+y2^2)⁻¹, from inv_pos.mpr sumYPos,
     pos_of_mul_pos_right l1 (le_of_lt this)
 ),
-have l6 : (-2*(x1*y1+x2*y2))^2 / (y1^2+y2^2)^2 < 4 * ((x1^2 + x2^2) / (y1^2+y2^2)), by rwa [div_pow] at l5,
+have (-2*(x1*y1+x2*y2))^2 / (y1^2+y2^2)^2 < 4 * ((x1^2 + x2^2) / (y1^2+y2^2)), by rwa [div_pow] at l5,
 have (-2*(x1*y1+x2*y2))^2 / (y1^2+y2^2)^2 = 4 * ((x1*y1+x2*y2)^2 / (y1^2+y2^2)^2), by ring,
-have l6  : (x1*y1+x2*y2)^2 / (y1^2+y2^2)^2 < ((x1^2 + x2^2) / (y1^2+y2^2)), by linarith [this],
-have l7 : ((x1*y1+x2*y2)^2 / (y1^2+y2^2)^2) * (y1^2+y2^2)^2 < ((x1^2 + x2^2) / (y1^2+y2^2)) * (y1^2+y2^2)^2, from mul_lt_mul l6 (le_of_eq rfl) sumYSquarePos (le_of_lt cPos),
+have (x1*y1+x2*y2)^2 / (y1^2+y2^2)^2 < ((x1^2 + x2^2) / (y1^2+y2^2)), by linarith [this],
+have ((x1*y1+x2*y2)^2 / (y1^2+y2^2)^2) * (y1^2+y2^2)^2 < ((x1^2 + x2^2) / (y1^2+y2^2)) * (y1^2+y2^2)^2, from mul_lt_mul this (le_of_eq rfl) sumYSquarePos (le_of_lt cPos),
 have helper1 : ((x1^2 + x2^2) / (y1^2+y2^2)) * (y1^2+y2^2)^2 = (x1^2 + x2^2) * (y1^2+y2^2), from (
     calc
     ((x1^2 + x2^2) / (y1^2+y2^2)) * (y1^2+y2^2)^2 = (x1^2 + x2^2) / (y1^2+y2^2) * (y1^2+y2^2) * (y1^2+y2^2) : by rw [pow_two (y1^2+y2^2), mul_assoc]
@@ -189,9 +196,9 @@ have helper2 : ((x1*y1+x2*y2)^2 / (y1^2+y2^2)^2) * (y1^2+y2^2)^2 = (x1*y1+x2*y2)
     ((x1*y1+x2*y2)^2 / (y1^2+y2^2)^2) * (y1^2+y2^2)^2 = ((x1*y1+x2*y2)^2 * (y1^2+y2^2)^2) / (y1^2+y2^2)^2 : by ring
     ... = (x1*y1+x2*y2)^2 : by rw [mul_div_cancel _ (ne.symm $ ne_of_lt sumYSquarePos)]
 ),
-have l8 : (x1*y1+x2*y2)^2 < (x1^2 + x2^2) * (y1^2+y2^2), by rwa [<-helper1, <-helper2],
-have l9 : sqrt ((x1*y1+x2*y2)^2) < sqrt ((x1^2 + x2^2) * (y1^2+y2^2)), from (real.sqrt_lt (pow_two_nonneg (x1*y1+x2*y2)) (le_of_lt $ mul_pos x12Pos sumYPos)).mpr l8,
-by rwa [real.sqrt_sqr_eq_abs, real.sqrt_mul (le_of_lt x12Pos)] at l9
+have (x1*y1+x2*y2)^2 < (x1^2 + x2^2) * (y1^2+y2^2), by rwa [<-helper1, <-helper2],
+have sqrt ((x1*y1+x2*y2)^2) < sqrt ((x1^2 + x2^2) * (y1^2+y2^2)), from (real.sqrt_lt (pow_two_nonneg (x1*y1+x2*y2)) (le_of_lt $ mul_pos sumXSquarePos sumYPos)).mpr this,
+by rwa [real.sqrt_sqr_eq_abs, real.sqrt_mul (le_of_lt sumXSquarePos)] at this
 
 -- have l2 : ∀ a, 0 < (a * sqrt (y1^2+y2^2))^2 + b*(a * sqrt (y1^2+y2^2)) + c, from (
 --     λ a,
@@ -258,3 +265,109 @@ by rwa [real.sqrt_sqr_eq_abs, real.sqrt_mul (le_of_lt x12Pos)] at l9
 -- calc
 --     0   < a^2*(y1^2+y2^2) - 2*a*(x1*y1 + x2*y2) + (x1^2 + x2^2) : schwarz_1_helper_2 h1 h2
 --     ... < (sqrt (x1^2 + x2^2) * sqrt (y1^2 + y2^2)) - (x1*y1 + x2*y2) : sorry
+
+-- (b)
+
+private def b_helper (x y : ℝ) : 2*x*y ≤ x^2 + y^2 :=
+have 0 ≤ (x - y)^2, from pow_two_nonneg (x - y),
+have 0 ≤ x^2 + y^2 - (2*x*y), by linarith only [this],
+sub_nonneg.mp this
+
+def schwarz_2 : x1*y1 + x2*y2 ≤ sqrt (x1^2 + x2^2) * sqrt (y1^2 + y2^2) :=
+begin
+
+cases (em (x1 = 0 ∧ x2 = 0)),
+{ exact ((le_of_eq $ schwarz_equality_zero_x h)) },
+cases (em (y1 = 0 ∧ y2 = 0)),
+{ exact (le_of_eq $ schwarz_equality_zero h_1) },
+
+have sumSqXPos : 0 < x1^2 + x2^2, by {
+    cases (not_and_distrib.mp h),
+    { exact add_pos_of_pos_of_nonneg (pow_two_pos_of_ne_zero x1 h_2) (pow_two_nonneg x2) },
+    exact add_pos_of_nonneg_of_pos (pow_two_nonneg x1) (pow_two_pos_of_ne_zero x2 h_2)
+},
+have sumSqYPos : 0 < y1^2 + y2^2, by {
+    cases (not_and_distrib.mp h_1),
+    { exact add_pos_of_pos_of_nonneg (pow_two_pos_of_ne_zero y1 h_2) (pow_two_nonneg y2) },
+    exact add_pos_of_nonneg_of_pos (pow_two_nonneg y1) (pow_two_pos_of_ne_zero y2 h_2)
+},
+have mulSqrtPos : 0 < sqrt (x1^2 + x2^2) * sqrt (y1^2 + y2^2), from mul_pos (real.sqrt_pos.elim_right sumSqXPos) (real.sqrt_pos.elim_right sumSqYPos),
+have sq1 : (x1 / sqrt (x1^2 + x2^2))^2 = x1^2 / (x1^2 + x2^2), by field_simp [real.sqr_sqrt (le_of_lt sumSqXPos)],
+have sq2 : (x2 / sqrt (x1^2 + x2^2))^2 = x2^2 / (x1^2 + x2^2), by field_simp [real.sqr_sqrt (le_of_lt sumSqXPos)],
+have sq3 : (y1 / sqrt (y1^2 + y2^2))^2 = y1^2 / (y1^2 + y2^2), by field_simp [real.sqr_sqrt (le_of_lt sumSqYPos)],
+have sq4 : (y2 / sqrt (y1^2 + y2^2))^2 = y2^2 / (y1^2 + y2^2), by field_simp [real.sqr_sqrt (le_of_lt sumSqYPos)],
+have mul1 : (x1 / sqrt (x1^2 + x2^2)) * (y1 / sqrt (y1^2 + y2^2)) = (x1 * y1) / (sqrt (x1^2 + x2^2) * sqrt (y1^2 + y2^2)), by rw [div_mul_div],
+have mul2 : (x2 / sqrt (x1^2 + x2^2)) * (y2 / sqrt (y1^2 + y2^2)) = (x2 * y2) / (sqrt (x1^2 + x2^2) * sqrt (y1^2 + y2^2)), by rw [div_mul_div],
+
+have ones :
+    2 * (x1 / sqrt (x1^2 + x2^2)) * (y1 / sqrt (y1^2 + y2^2))
+    ≤ (x1 / sqrt (x1^2 + x2^2))^2 + (y1 / sqrt (y1^2 + y2^2))^2,
+from b_helper (x1 / sqrt (x1^2 + x2^2)) (y1 / sqrt (y1^2 + y2^2)),
+
+have twos :
+    2 * (x2 / sqrt (x1^2 + x2^2)) * (y2 / sqrt (y1^2 + y2^2))
+    ≤ (x2 / sqrt (x1^2 + x2^2))^2 + (y2 / sqrt (y1^2 + y2^2))^2,
+from b_helper (x2 / sqrt (x1^2 + x2^2)) (y2 / sqrt (y1^2 + y2^2)),
+
+have :
+    2 * (x1 / sqrt (x1^2 + x2^2)) * (y1 / sqrt (y1^2 + y2^2))
+    + 2 * (x2 / sqrt (x1^2 + x2^2)) * (y2 / sqrt (y1^2 + y2^2))
+    ≤ (x1 / sqrt (x1^2 + x2^2))^2 + (y1 / sqrt (y1^2 + y2^2))^2
+    + ((x2 / sqrt (x1^2 + x2^2))^2 + (y2 / sqrt (y1^2 + y2^2))^2),
+from add_le_add ones twos,
+
+have l1 :
+    2
+    * (
+        (x1 / sqrt (x1^2 + x2^2)) * (y1 / sqrt (y1^2 + y2^2))
+        + (x2 / sqrt (x1^2 + x2^2)) * (y2 / sqrt (y1^2 + y2^2))
+    )
+    ≤ x1^2 / (x1^2 + x2^2) + y1^2 / (y1^2 + y2^2)
+    + x2^2 / (x1^2 + x2^2) + y2^2 / (y1^2 + y2^2),
+by linarith [sq1, sq2, sq3, sq4],
+
+have left :
+    (x1 / sqrt (x1^2 + x2^2)) * (y1 / sqrt (y1^2 + y2^2))
+    + (x2 / sqrt (x1^2 + x2^2)) * (y2 / sqrt (y1^2 + y2^2))
+    = (x1*y1 + x2*y2) / (sqrt (x1^2 + x2^2) * sqrt (y1^2 + y2^2)),
+from (
+    calc
+    (x1 / sqrt (x1^2 + x2^2)) * (y1 / sqrt (y1^2 + y2^2))
+    + (x2 / sqrt (x1^2 + x2^2)) * (y2 / sqrt (y1^2 + y2^2))
+    = (x1 * y1) / (sqrt (x1^2 + x2^2) * sqrt (y1^2 + y2^2)) + (x2 * y2) / (sqrt (x1^2 + x2^2) * sqrt (y1^2 + y2^2)) : by rw [mul1, mul2]
+    ... = (x1*y1 + x2*y2) / (sqrt (x1^2 + x2^2) * sqrt (y1^2 + y2^2)) : by rw [div_add_div_same]
+),
+
+have right :
+    x1^2 / (x1^2 + x2^2) + y1^2 / (y1^2 + y2^2)
+    + x2^2 / (x1^2 + x2^2) + y2^2 / (y1^2 + y2^2)
+    = 2,
+from (
+    calc
+    x1^2 / (x1^2 + x2^2) + y1^2 / (y1^2 + y2^2)
+    + x2^2 / (x1^2 + x2^2) + y2^2 / (y1^2 + y2^2)
+    = x1^2 / (x1^2 + x2^2) + (x2^2 / (x1^2 + x2^2)) + (y1^2 / (y1^2 + y2^2) + (y2^2 / (y1^2 + y2^2))) : by ring
+    ... = 1 + 1 : by field_simp [div_self (ne.symm $ ne_of_lt sumSqXPos), div_self (ne.symm $ ne_of_lt sumSqYPos)]
+    ... = 2 : norm_num.one_succ
+),
+
+have :
+    2 * ((x1*y1 + x2*y2) / (sqrt (x1^2 + x2^2) * sqrt (y1^2 + y2^2))) ≤ 2,
+by rwa [left, right] at l1,
+
+have :
+    2 * ((x1*y1 + x2*y2) / (sqrt (x1^2 + x2^2) * sqrt (y1^2 + y2^2))) * (sqrt (x1^2 + x2^2) * sqrt (y1^2 + y2^2)) ≤ 2 * (sqrt (x1^2 + x2^2) * sqrt (y1^2 + y2^2)),
+from (mul_le_mul_right mulSqrtPos).elim_right this,
+
+have :
+    ((x1*y1 + x2*y2) / (sqrt (x1^2 + x2^2) * sqrt (y1^2 + y2^2))) * (sqrt (x1^2 + x2^2) * sqrt (y1^2 + y2^2)) ≤ sqrt (x1^2 + x2^2) * sqrt (y1^2 + y2^2),
+by linarith,
+
+rwa [
+    div_mul_cancel (x1*y1 + x2*y2) (ne.symm $ ne_of_lt mulSqrtPos)
+] at this
+end
+
+-- c
+
+def schwarz_3 : x1*y1 + x2*y2 ≤ sqrt (x1^2 + x2^2) * sqrt (y1^2 + y2^2) := sorry
