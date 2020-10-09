@@ -129,7 +129,7 @@ by linarith only [this]
 
 def schwarz_1 : ¬(y1 = 0 ∧ y2 = 0) →
 ¬(∃ a, x1 = a * y1 ∧ x2 = a * y2) →
-abs (x1*y1 + x2*y2) < sqrt (x1^2 + x2^2) * sqrt (y1^2 + y2^2) :=
+(x1*y1 + x2*y2) < sqrt (x1^2 + x2^2) * sqrt (y1^2 + y2^2) :=
 assume h1 h2,
 have sumYPos : 0 < y1^2 + y2^2, begin
     cases (not_and_distrib.elim_left h1),
@@ -198,7 +198,9 @@ have helper2 : ((x1*y1+x2*y2)^2 / (y1^2+y2^2)^2) * (y1^2+y2^2)^2 = (x1*y1+x2*y2)
 ),
 have (x1*y1+x2*y2)^2 < (x1^2 + x2^2) * (y1^2+y2^2), by rwa [<-helper1, <-helper2],
 have sqrt ((x1*y1+x2*y2)^2) < sqrt ((x1^2 + x2^2) * (y1^2+y2^2)), from (real.sqrt_lt (pow_two_nonneg (x1*y1+x2*y2)) (le_of_lt $ mul_pos sumXSquarePos sumYPos)).mpr this,
-by rwa [real.sqrt_sqr_eq_abs, real.sqrt_mul (le_of_lt sumXSquarePos)] at this
+have abs (x1*y1 + x2*y2) < sqrt (x1^2 + x2^2) * sqrt (y1^2 + y2^2), by rwa [real.sqrt_sqr_eq_abs, real.sqrt_mul (le_of_lt sumXSquarePos)] at this,
+(abs_lt.elim_left this).right
+
 
 -- have l2 : ∀ a, 0 < (a * sqrt (y1^2+y2^2))^2 + b*(a * sqrt (y1^2+y2^2)) + c, from (
 --     λ a,
@@ -370,4 +372,27 @@ end
 
 -- c
 
-def schwarz_3 : x1*y1 + x2*y2 ≤ sqrt (x1^2 + x2^2) * sqrt (y1^2 + y2^2) := sorry
+def schwarz_3_aux : (x1^2 + x2^2)*(y1^2 + y2^2) = (x1*y1 + x2*y2)^2 + (x1*y2 - x2*y1)^2 :=
+calc
+    (x1^2 + x2^2)*(y1^2 + y2^2) = x1^2 * (y1^2 + y2^2) + x2^2 * (y1^2 + y2^2) : by linarith
+    ... = x1^2 * y1^2 + x1^2 * y2^2 + (x2^2 * y1^2 + x2^2 * y2^2) : by rw [mul_add (x1^2), mul_add (x2^2)]
+    ... = (x1 * y1)^2 + x1^2*y2^2 + (x2^2 * y1^2 + (x2 * y2)^2) : by rw [mul_pow x1, mul_pow x2]
+    ... = (x1*y1 + x2*y2)^2 + (x1*y2 - x2*y1)^2 : by linarith
+
+def schwarz_3 : x1*y1 + x2*y2 ≤ sqrt (x1^2 + x2^2) * sqrt (y1^2 + y2^2) :=
+begin
+have sumXSqNonneg : 0 ≤ x1^2 + x2^2, from add_nonneg (pow_two_nonneg x1) (pow_two_nonneg x2),
+have sumYSqNonneg : 0 ≤ (y1^2 + y2^2), from add_nonneg (pow_two_nonneg y1) (pow_two_nonneg y2),
+have : 0 ≤ (x1*y2 - x2*y1)^2, from pow_two_nonneg (x1*y2 - x2*y1),
+have : (x1*y1 + x2*y2)^2 ≤ (x1*y1 + x2*y2)^2 + (x1*y2 - x2*y1)^2, from le_add_of_nonneg_right this,
+have : (x1*y1 + x2*y2)^2 ≤ (x1^2 + x2^2)*(y1^2 + y2^2), by rwa [←schwarz_3_aux] at this,
+
+-- Now take the sqrt of both sides.
+have leftNonneg : 0 ≤ (x1*y1 + x2*y2)^2, from pow_two_nonneg (x1 * y1 + x2 * y2),
+have rightNonneg : 0 ≤ (x1^2 + x2^2) * (y1^2 + y2^2), from mul_nonneg sumXSqNonneg sumYSqNonneg,
+
+have : sqrt ((x1*y1 + x2*y2)^2) ≤ sqrt ((x1^2 + x2^2)*(y1^2 + y2^2)), by rwa [real.sqrt_le leftNonneg rightNonneg],
+have : abs (x1*y1 + x2*y2) ≤ sqrt (x1^2 + x2^2) * sqrt (y1^2 + y2^2), by rwa [real.sqrt_sqr_eq_abs (x1*y1 + x2*y2), real.sqrt_mul sumXSqNonneg (y1^2 + y2^2)] at this,
+
+exact (abs_le.elim_left this).right
+end
