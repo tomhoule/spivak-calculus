@@ -20,5 +20,14 @@ abs (x - x₀) < ε / 2 ∧ abs (y - y₀) < ε / 2 →
 abs ((x - y) - (x₀ - y₀)) < ε :=
 begin
 intro h,
-sorry
+have l₁ : (x - x₀) + (-y + y₀) = (x - y) - (x₀ - y₀), by linarith,
+have l₂ : abs ((x - x₀) + (-y + y₀)) ≤ abs (x - x₀) + abs (-y + y₀), from abs_add (x - x₀) (-y + y₀),
+have l₃ : abs (-y + y₀) = abs (y - y₀), by rw [add_comm, tactic.ring.add_neg_eq_sub, abs_sub],
+have : abs (x - x₀) + abs (y - y₀) <  ε / 2 + ε / 2, from add_lt_add h.left h.right,
+have l₄ : abs (x - x₀) + abs (y - y₀) <  ε, by linarith only [this],
+calc
+    abs ((x - y) - (x₀ - y₀)) = abs ((x - x₀) + (-y + y₀)) : by rw l₁
+    ... ≤ abs (x - x₀) + abs (-y + y₀) : l₂
+    ... = abs (x - x₀) + abs (y - y₀) : by rw [l₃]
+    ... < ε : l₄
 end
