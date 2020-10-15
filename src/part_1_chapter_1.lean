@@ -22,14 +22,14 @@ namespace properties
     def add_opp : a + (-a) = 0 := by rw [add_comm, add_left_neg a]
     def opp_add : (-a) + a = 0 := add_left_neg a
 
-    def add_b_eq_self : (a + b = a) → b = (0 : α) :=
+    def add_b_eq_self : (a + b = a) → b = 0 :=
     assume h,
     calc
-        b = 0 + b : by rw zero_add
-            ... = (-a + a) + b : by rw opp_add
-            ... = -a + (a + b) : by rw add_assoc
-            ... = -a + a : by rw h
-            ... = 0 : by rw opp_add
+        b   = 0 + b : by rw zero_add
+        ... = (-a + a) + b : by rw opp_add
+        ... = -a + (a + b) : by rw add_assoc
+        ... = -a + a : by rw h
+        ... = 0 : by rw opp_add
 
     example : (x + 3 = 5) → (x = 2) :=
     assume h,
@@ -66,10 +66,10 @@ namespace properties
             ... = a⁻¹ * (a * c) : by rw [h]
             ... = c : by rw [mul_assoc', inverse_mul α a hnzero, one_mul]
 
-    example : a ≠ 0 → (a * b = 0) → (a = 0 ∨ b = 0) :=
+    example : a ≠ 0 → (a * b = 0) → b = 0 :=
     assume hnzero h,
-    or.inr $ calc
-        b = 1 * b : by rw one_mul b
+    calc
+        b   = 1 * b : by rw one_mul b
         ... = (a⁻¹ * a) * b : by rw [inverse_mul α a hnzero]
         ... = a⁻¹ * (a * b) : by rw [mul_assoc']
         ... = a⁻¹ * 0 : by rw h
@@ -94,7 +94,7 @@ namespace properties
     assume h,
     have a_is_twice_b_minus_a : a = ((2 * b) + -a), from (
         calc
-        a = a + 0 : by rw [add_zero a]
+        a   = a + 0 : by rw [add_zero a]
         ... = a + (-b + b) : by rw [opp_add]
         ... = (a + -b) + b : by rw [add_assoc']
         ... = (a - b) + b : rfl
