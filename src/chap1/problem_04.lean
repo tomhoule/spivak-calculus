@@ -1,7 +1,8 @@
 
-import data.rat.basic
 import data.real.basic
-import tactic.norm_num
+import data.real.pi
+
+open real (pi)
 
 variables {x : ℤ}
 
@@ -18,7 +19,7 @@ have 4 + x + -4 < 3 + -4, from add_lt_add_right this (-4),
 have x < 3 + -4, by simpa only [add_assoc, add_add_neg_cancel'_right],
 show x < -1, by assumption
 
--- Any x will satisfy this because x^2 is positive by definition.
+-- Any x will satisfy this because x^2 is non-negative by definition.
 example : 5 - (x^2) < 8 :=
 have 0 ≤ x^2, from pow_two_nonneg x,
 have h1 : -(x^2) ≤ 0, from neg_nonpos_of_nonneg this,
@@ -93,17 +94,30 @@ have h2 : (x-1)^2 < (x-1)^2 + 1, from int.lt_succ ((x-1)^2),
 have h3 : 0 < (x-1)^2 + 1, from lt_of_le_of_lt h1 h2,
 show 0 < (x^2) - 2*x + 2, by rwa [factorized]
 
+open real (sqrt)
 
 -- (vi)
-example : 2 < x^2 + x + 1 → 0 < x^2 + x - 1 :=
+example (x: ℝ) : 2 < x^2 + x + 1 → x > (sqrt 5 - 1) / 2 ∨ x < -(sqrt 5 + 1) / 2 :=
 assume h,
-have 2 + -2 < x^2 + x + 1 + -2, from add_lt_add_right h (-2),
-have 0 < x^2 + x + -1, by rwa [add_assoc] at this,
-have 0 < x^2 + x - 1, by assumption,
--- I don't know how to go further with lean at this point. You could use the quadratic formula to
--- get the roots, then take any value of x in the intervals to find out the sign, and take the
--- positive ones. But that's not a proof.
-this
+have l1 : 0 < x^2 + x - 1, by linarith only [h],
+have l2 : (-(1 : ℝ)/2)^2 = 1/4, by ring,
+have (x + 1/2)^2 = x^2 + x + 1/4, by ring,
+have lr : 5/4 < (x + 1/2)^2, by linarith only [l1, this],
+have sqrtFour : sqrt 4 = 2, from (real.sqrt_eq_iff_mul_self_eq (show (0 : real) <= 4, by norm_num) (show (0 : real) <= 2, by norm_num)).elim_right (show 2*2 = (4 : real), by norm_num),
+have lNonneg : (0 : ℝ) ≤ 5/4, by norm_num,
+have rNonneg : 0 ≤ (x + 1/2)^2, from pow_two_nonneg _,
+have sqrt (5 / 4) < sqrt ((x + 1/2)^2) , by rwa [<-(real.sqrt_lt lNonneg rNonneg)] at lr,
+have sqrt 5 / sqrt 4 < abs (x+1/2), by rwa [<-real.sqrt_div (show (0 : ℝ) ≤ 5, by norm_num) 4, <-real.sqrt_sqr_eq_abs],
+have sqrt 5 / 2 < abs (x+1/2), by rwa [sqrtFour] at this,
+or.elim (le_or_gt 0 (x + 1/2))
+    (λ hNonneg,
+        have sqrt 5 / 2 < x + 1/2, by rwa [abs_of_nonneg hNonneg] at this,
+        or.inl $ by linarith only [this]
+    )
+    (λ hNeg,
+        have sqrt 5 / 2 < -(x + 1/2), by rwa [abs_of_neg hNeg] at this,
+        or.inr $ by linarith only [this]
+    )
 
 def complete_the_square : ∀ (a n m : ℤ), a^2 + (n + m) * a + n * m = (a + m) * (a + n) :=
 assume a n m,
@@ -133,13 +147,31 @@ or.elim (decidable.le_or_lt 0 (x + 2))
         or.inr $ this
     )
 
---- (viii)
-example : 0 < x^2 + x + 1 := sorry -- can't factorize, we would have to use the quadratic formula here
+-- (viii)
+example (x : ℝ) : 0 < x^2 + x + 1 → x = 800 :=
+assume h,
+have helper1 : (1 : ℝ)/4 + 3/4 = 1, by norm_num,
+have (x + 1/2)^2 + 3/4 = x^2 + x + 1, from (
+    calc
+    (x + 1/2)^2 + 3/4 =  x^2 + 2*(1/2)*x + 1/4 + 3/4 : by ring
+    ... = x^2 + 2*(1/2)*x + 1 : by simp only [add_assoc _ _ ((3: ℝ)/4), helper1]
+    ... = x^2 + x + 1 : by norm_num
+),
+have -3/4 < (x + 1/2)^2, by linarith only [h, this],
+-- cannot go further at this point, because I going into complex numbers with my
+-- current knowledge of mathlib is too hard
+--
+-- from
+-- https://etoix.wordpress.com/2014/09/28/calculus-by-spivak-chapter-1-problem-4/
+-- If this were x^2 -x + 1 = 0, the solution would be \frac{-2 \pm
+-- \sqrt{-3}}{2}. The solution is imaginary, so the parabola is entirely above
+-- or below the x-axis. Since the first term is positive, we know this is a
+-- parabola facing up, so it’s entirely above the x-axis. Therefore any real
+-- will work.
+sorry --
 
---- (ix)
-constant π : ℤ -- just because I can
-
-example : 0 < (x - π) * (x + 5) * (x - 3) := sorry -- these three being the roots
+-- (ix)
+example (x : ℝ) : 0 < (x - pi) * (x + 5) * (x - 3) := sorry -- these three being the roots
 -- begin
 -- intro h,
 -- have h1 : (0 < (x - π) * (x + 5) ∧ 0 < x - 3) ∨

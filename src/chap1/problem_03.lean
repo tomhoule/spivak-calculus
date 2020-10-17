@@ -38,7 +38,7 @@ calc
             ... = 1 * a⁻¹ * b⁻¹ : by rw [mul_inv_cancel abnotzero]
             ... = a⁻¹ * b⁻¹ : by rw [one_mul]
 
---- (iv)
+-- (iv)
 def div_div_mul : b ≠ 0 → d ≠ 0 → (a/b) * (c/d) = (a*c)/(b*d) :=
 assume bnotzero dnotzero,
 calc
@@ -56,7 +56,7 @@ calc
         ... = a * 1⁻¹ : by rw mul_inv_cancel anzero
         ... = a : by simp only [inv_one, mul_one]
 
---- (v)
+-- (v)
 def my_div_div : b ≠ 0 → c ≠ 0 → d ≠ 0 → (a/b) / (c/d) = (a*d)/(b*c) :=
 assume bnzero cnzero dnzero,
 calc
