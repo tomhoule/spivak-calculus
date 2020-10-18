@@ -175,36 +175,49 @@ or.elim (le_or_gt 0 x)
 
 -- (ix)
 
-example (x : ℝ) : 0 < (x - pi) * (x + 5) * (x - 3) → pi < x :=
+example (x : ℝ) : 0 < (x - pi) * (x + 5) * (x - 3) → pi < x ∨ (-5 < x ∧ x < 3) :=
 assume h,
-have left : 0 < (x - pi) → pi < x, from assume h, by linarith only [h],
-have middle : 0 < (x + 5) → -5 < x, from assume h, by linarith only [h],
-have right : 0 < x - 3 → 3 < x, from assume h, by linarith only [h],
+have leftP : 0 < (x - pi) → pi < x, from assume h, by linarith only [h],
+have middleP : 0 < (x + 5) → -5 < x, from assume h, by linarith only [h],
+have rightP : 0 < x - 3 → 3 < x, from assume h, by linarith only [h],
+have leftN : 0 > (x - pi) → pi > x, from assume h, by linarith only [h],
+have middleN : 0 > (x + 5) → -5 > x, from assume h, by linarith only [h],
+have rightN : 0 > x - 3 → 3 > x, from assume h, by linarith only [h],
 by begin
     rcases (lt_trichotomy 0 (x - pi)) with leftPos | leftZero | leftNeg,
     all_goals { rcases (lt_trichotomy 0 (x + 5)) with middlePos | middleZero | middleNeg },
     all_goals { rcases (lt_trichotomy 0 (x - 3)) with rightPos | rightZero | rightNeg },
-    any_goals { have lhsPos : 0 < (x - pi) * (x+5), by linarith },
-    any_goals { have lhsNeg : 0 > (x - pi) * (x+5), by linarith },
-    any_goals { have lhsZero : 0 = (x - pi) * (x+5), by linarith },
-    any_goals { specialize left leftPos },
-    any_goals { specialize right rightPos },
-    any_goals { specialize middle middlePos },
-    -- Weed out the zero cases.
-    all_goals { try {
-        have : (x - pi) * (x + 5) * (x - 3) = 0, by linarith,
-        have : ¬ 0 < (x - pi) * (x + 5) * (x - 3), from sorry,
-        exact (false.elim $ absurd h this)
-    } },
-    -- Weed out the negative cases.
+    -- Eliminate the zero cases
     any_goals {
-        have : (x - pi) * (x + 5) * (x - 3) < 0, by linarith,
-        sorry
-        -- have : ¬ 0 < (x - pi) * (x + 5) * (x - 3), from sorry,
-        -- exact absurd h this
+        have hZero : 0 = (x - pi) * (x + 5) * (x - 3), by rw [<-rightZero, mul_zero] <|> rw [<-leftZero, zero_mul, zero_mul] <|> rw [<-middleZero, mul_zero, zero_mul],
+        have : ¬ (0: ℝ) < 0, from lt_irrefl 0,
+        have : ¬ 0 < (x - pi) * (x + 5) * (x - 3), by {
+            conv at this in (_ < _) {
+                to_rhs,
+                rw hZero
+            },
+            assumption
+        },
+        exact (false.elim $ absurd h this)
     },
-    -- any_goals { assumption },
-    sorry,
-    sorry,
-    sorry
+    -- Eliminate the negative cases
+    any_goals {
+        have hNeg : (x - pi) * (x + 5) * (x - 3) < 0, by linarith <|>
+            simp only [mul_pos_of_neg_of_neg, mul_neg_of_pos_of_neg, leftNeg, middleNeg, rightNeg] <|>
+            simp only [mul_pos, mul_neg_of_pos_of_neg, leftPos, middlePos, rightNeg] <|>
+            simp only [mul_pos, mul_neg_of_pos_of_neg, leftPos, middlePos, rightNeg] <|>
+            simp only [mul_neg_of_neg_of_pos, leftNeg, middlePos, rightPos],
+        have : ¬ 0 < (x - pi) * (x + 5) * (x - 3), by exact asymm hNeg,
+        exact (false.elim $ absurd h this)
+    },
+    all_goals {
+        try { specialize leftP leftPos },
+        try { specialize middleP middlePos },
+        try { specialize rightP rightPos },
+        try { specialize leftN leftNeg },
+        try { specialize middleN middleNeg },
+        try { specialize rightN rightNeg },
+    },
+    any_goals { left, linarith },
+    right, constructor, assumption'
 end
