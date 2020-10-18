@@ -1,6 +1,7 @@
 
 import data.real.basic
 import data.real.pi
+import analysis.special_functions.pow
 
 open real (pi)
 
@@ -221,3 +222,125 @@ by begin
     any_goals { left, linarith },
     right, constructor, assumption'
 end
+
+-- (x)
+
+open real (rpow)
+
+example (x : ℝ) : 0 < (x - rpow 2 (1/3)) * (x - rpow 2 (1/2)) → x < rpow 2 (1/3) \/ x > rpow 2 (1/2) :=
+assume h,
+have (1: ℝ)/3 < 1/2, by norm_num,
+have h1 : rpow 2 (1/3) < rpow 2 (1/2), from real.rpow_lt_rpow_of_exponent_lt one_lt_two this,
+or.elim3 (lt_trichotomy x (rpow 2 (1/3)))
+    (λ xLt,
+        or.elim3 (lt_trichotomy x (rpow 2 (1/2)))
+            (λ xLt2, or.inl xLt)
+            (λ xEq,
+                have x - rpow 2 (1/2) = 0, from sub_eq_zero.mpr xEq,
+                -- Zero case
+                have h1 : 0 = (x - rpow 2 (1/3)) * (x - rpow 2 (1/2)), from eq.symm $ by rw [this, mul_zero],
+                have ¬ (0: ℝ) < 0, from lt_irrefl 0,
+                have ¬ 0 < (x - rpow 2 (1/3)) * (x - rpow 2 (1/2)), by {
+                    conv at this {
+                        congr,
+                        to_rhs,
+                        rw h1
+                    },
+                    assumption
+                },
+                false.elim $ absurd h this
+            )
+            -- Negative case
+            (λ xGt,
+                have h1 : 0 < (x - rpow 2 (1/3)), by linarith,
+                have 0 > (x - rpow 2 (1/2)), by linarith,
+                have 0 > (x - rpow 2 (1/3)) * (x - rpow 2 (1/2)), from linarith.mul_neg this h1,
+                have ¬ 0 < (x - rpow 2 (1/3)) * (x - rpow 2 (1/2)), from asymm this,
+                false.elim $ absurd h this
+            )
+    )
+    (λ xEq,
+        have x - rpow 2 (1/3) = 0, from sub_eq_zero.mpr xEq,
+        -- Zero case
+        have h1 : 0 = (x - rpow 2 (1/3)) * (x - rpow 2 (1/2)), from eq.symm $ by rw [this, zero_mul],
+        have ¬ (0: ℝ) < 0, from lt_irrefl 0,
+        have ¬ 0 < (x - rpow 2 (1/3)) * (x - rpow 2 (1/2)), by {
+            conv at this {
+                congr,
+                to_rhs,
+                rw h1
+            },
+            assumption
+        },
+        false.elim $ absurd h this
+    )
+    (λ xGt,
+        or.elim3 (lt_trichotomy x (rpow 2 (1/2)))
+            (λ xLt,
+                have h1 : 0 < (x - rpow 2 (1/3)), by linarith,
+                have 0 > (x - rpow 2 (1/2)), by linarith,
+                have 0 > (x - rpow 2 (1/3)) * (x - rpow 2 (1/2)), from linarith.mul_neg this h1,
+                have ¬ 0 < (x - rpow 2 (1/3)) * (x - rpow 2 (1/2)), from asymm this,
+                false.elim $ absurd h this
+            )
+            (λ xEq,
+                have x - rpow 2 (1/2) = 0, from sub_eq_zero.mpr xEq,
+                -- Zero case
+                have h1 : 0 = (x - rpow 2 (1/3)) * (x - rpow 2 (1/2)), from eq.symm $ by rw [this, mul_zero],
+                have ¬ (0: ℝ) < 0, from lt_irrefl 0,
+                have ¬ 0 < (x - rpow 2 (1/3)) * (x - rpow 2 (1/2)), by {
+                    conv at this {
+                        congr,
+                        to_rhs,
+                        rw h1
+                    },
+                    assumption
+                },
+                false.elim $ absurd h this
+            )
+            (λ xGt2, or.inr $ has_lt.lt.gt xGt2)
+    )
+
+-- (xi)
+
+def ex_xi : ∀ (x : ℕ), (2:ℝ)^x < 8 → x < 3
+| 0 h := by linarith
+| 1 h := by linarith
+| 2 h := by linarith
+| 3 h := by linarith
+| (n+3) h := (
+    have (3:ℕ) ≤ (n+3), by linarith,
+    have helper1 : (2:ℝ)^3 ≤ 2^(n+3), from pow_le_pow (le_of_lt $ one_lt_two) this,
+    have helper2 : (2:ℝ)^3 = 8, by norm_num,
+    have h : (2:ℝ)^(n+3) < 8, from h,
+    have h1 : ¬(2:ℝ)^(n+3) ≥ 8, from not_le.mpr h,
+    have h2 : 8 ≤ (2:ℝ)^(n+3), from (eq.symm helper2).trans_le helper1,
+    false.elim $ absurd h2 h1
+)
+
+-- (xii)
+
+def ex_xii : ∀ (x : ℕ), ↑x + (3 : ℤ)^x < 4 → x = 0
+| 0 := by norm_num
+| 1 :=
+    assume h,
+    have (1: ℤ) + 3^1 = 4, by norm_num,
+    have (4: ℤ) < 4, by {
+        conv {
+            to_rhs,
+            rw [<-this]
+        },
+        assumption
+    },
+    false.elim $ lt_irrefl 4 $ this
+| (n+2) := (
+    assume (h : ↑(n+2) + (3:ℤ)^(n+2) < 4),
+    have oneCase : (1: ℤ) + 3^1 = 4, by norm_num,
+    have left : 1 < n+2, by linarith,
+    have 3^1 ≤ (3:ℤ)^(n+2), from pow_le_pow (by norm_num) (le_of_lt left),
+    have left : (1:ℤ) < n+2, by linarith,
+    have (1:ℤ) + 3^1 ≤ (n+2) + 3^(n+2), from add_le_add (le_of_lt left) this,
+    have (4:ℤ) ≤ (n+2) + 3^(n+2), by rwa [oneCase] at this,
+    have ¬(n+2 : ℤ) + 3^(n+2) < 4, from not_lt.mpr this,
+    false.elim $ absurd h this
+)
