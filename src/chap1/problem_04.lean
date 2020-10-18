@@ -148,44 +148,63 @@ or.elim (decidable.le_or_lt 0 (x + 2))
     )
 
 -- (viii)
-example (x : ℝ) : 0 < x^2 + x + 1 → x = 800 :=
-assume h,
-have helper1 : (1 : ℝ)/4 + 3/4 = 1, by norm_num,
-have (x + 1/2)^2 + 3/4 = x^2 + x + 1, from (
-    calc
-    (x + 1/2)^2 + 3/4 =  x^2 + 2*(1/2)*x + 1/4 + 3/4 : by ring
-    ... = x^2 + 2*(1/2)*x + 1 : by simp only [add_assoc _ _ ((3: ℝ)/4), helper1]
-    ... = x^2 + x + 1 : by norm_num
-),
-have -3/4 < (x + 1/2)^2, by linarith only [h, this],
--- cannot go further at this point, because I going into complex numbers with my
--- current knowledge of mathlib is too hard
---
--- from
--- https://etoix.wordpress.com/2014/09/28/calculus-by-spivak-chapter-1-problem-4/
--- If this were x^2 -x + 1 = 0, the solution would be \frac{-2 \pm
--- \sqrt{-3}}{2}. The solution is imaginary, so the parabola is entirely above
--- or below the x-axis. Since the first term is positive, we know this is a
--- parabola facing up, so it’s entirely above the x-axis. Therefore any real
--- will work.
-sorry --
+
+example (x : ℝ) : 0 < x^2 + x + 1 :=
+or.elim (le_or_gt 0 x)
+    (λ xNonneg,
+        have 0 ≤ x^2, from pow_two_nonneg x,
+        have 0 ≤ x^2 + x, from add_nonneg this xNonneg,
+        show 0 < x^2 + x + 1, from lt_add_of_le_of_pos this zero_lt_one
+    )
+    (λ xNeg,
+        or.elim (lt_or_ge (-1) x)
+            (λ xGtNegOne,
+                have h1 : 0 < x + 1, by linarith [xGtNegOne],
+                have h2 : 0 ≤ x^2, from pow_two_nonneg x,
+                suffices 0 < x^2 + (x + 1), by rwa [add_assoc],
+                lt_add_of_le_of_pos h2 h1
+            )
+            (λ (xLtNegOne : x ≤ -1),
+                have h1 : 0 ≤ -x, by linarith only [xLtNegOne],
+                have 1 ≤ -x, from le_neg.mp xLtNegOne,
+                have -x ≤ -x * -x, from le_mul_of_one_le_left h1 this,
+                have 0 ≤ x^2 + x, by linarith only [this],
+                lt_add_of_le_of_pos this zero_lt_one
+            )
+    )
 
 -- (ix)
-example (x : ℝ) : 0 < (x - pi) * (x + 5) * (x - 3) := sorry -- these three being the roots
--- begin
--- intro h,
--- have h1 : (0 < (x - π) * (x + 5) ∧ 0 < x - 3) ∨
---             (((x - π) * (x + 5) < 0)) ∧ x - 3 < 0, from pos_and_pos_or_neg_and_neg_of_mul_pos h,
--- cases h1,
--- {
---     have h2 : (0 < x - π ∧ 0 < x + 5) ∨ (x - π < 0 ∧ x + 5 < 0), from pos_and_pos_or_neg_and_neg_of_mul_pos h1.left,
---     cases h2,
---     { sorry },
---     sorry
--- },
--- -- have h2 : (0 < x - π ∧ 0 < x + 5) ∨ (x - π < 0 ∧ x + 5 < 0), from neg_of_mul_neg_left sorry,
--- sorry
--- end
 
--- This is painful, I am stopping this exercise here. It feels like I don't have the tools to do
--- interesting proofs on inequalities. It would involve computational/visual methods.
+example (x : ℝ) : 0 < (x - pi) * (x + 5) * (x - 3) → pi < x :=
+assume h,
+have left : 0 < (x - pi) → pi < x, from assume h, by linarith only [h],
+have middle : 0 < (x + 5) → -5 < x, from assume h, by linarith only [h],
+have right : 0 < x - 3 → 3 < x, from assume h, by linarith only [h],
+by begin
+    rcases (lt_trichotomy 0 (x - pi)) with leftPos | leftZero | leftNeg,
+    all_goals { rcases (lt_trichotomy 0 (x + 5)) with middlePos | middleZero | middleNeg },
+    all_goals { rcases (lt_trichotomy 0 (x - 3)) with rightPos | rightZero | rightNeg },
+    any_goals { have lhsPos : 0 < (x - pi) * (x+5), by linarith },
+    any_goals { have lhsNeg : 0 > (x - pi) * (x+5), by linarith },
+    any_goals { have lhsZero : 0 = (x - pi) * (x+5), by linarith },
+    any_goals { specialize left leftPos },
+    any_goals { specialize right rightPos },
+    any_goals { specialize middle middlePos },
+    -- Weed out the zero cases.
+    all_goals { try {
+        have : (x - pi) * (x + 5) * (x - 3) = 0, by linarith,
+        have : ¬ 0 < (x - pi) * (x + 5) * (x - 3), from sorry,
+        exact (false.elim $ absurd h this)
+    } },
+    -- Weed out the negative cases.
+    any_goals {
+        have : (x - pi) * (x + 5) * (x - 3) < 0, by linarith,
+        sorry
+        -- have : ¬ 0 < (x - pi) * (x + 5) * (x - 3), from sorry,
+        -- exact absurd h this
+    },
+    -- any_goals { assumption },
+    sorry,
+    sorry,
+    sorry
+end
