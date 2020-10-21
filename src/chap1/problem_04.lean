@@ -7,22 +7,23 @@ open real (pi)
 
 variables {x : ℤ}
 
--- In this file in general, I went from the result to the assumptions, because
--- it was more in line with the train of thoughts. I would write this
--- differently now (see xiv).
+example : (4 - x < 3 - (2*x)) ↔ x < -1 :=
+iff.intro
+(
+    assume h,
+    have (4 - x < 3 - (x + x)), by rwa [mul_comm, mul_two x] at h,
+    have 4 < 3 - (x + x) + x, from lt_add_of_sub_right_lt this,
+    have 4 < 3 + -(x + x) + x, by assumption,
+    have 4 < 3 + (-x + -x) + x, by rwa [neg_add] at this,
+    have 4 < 3 + -x, by simpa only [add_assoc, add_zero, add_left_neg],
+    have 4 < 3 - x, by assumption,
+    have 4 + x < 3, from add_lt_of_lt_sub_right this,
+    have 4 + x + -4 < 3 + -4, from add_lt_add_right this (-4),
+    have x < 3 + -4, by simpa only [add_assoc, add_add_neg_cancel'_right],
+    show x < -1, by assumption
 
-example : (4 - x < 3 - (2*x)) → x < -1 :=
-assume h,
-have (4 - x < 3 - (x + x)), by rwa [mul_comm, mul_two x] at h,
-have 4 < 3 - (x + x) + x, from lt_add_of_sub_right_lt this,
-have 4 < 3 + -(x + x) + x, by assumption,
-have 4 < 3 + (-x + -x) + x, by rwa [neg_add] at this,
-have 4 < 3 + -x, by simpa only [add_assoc, add_zero, add_left_neg],
-have 4 < 3 - x, by assumption,
-have 4 + x < 3, from add_lt_of_lt_sub_right this,
-have 4 + x + -4 < 3 + -4, from add_lt_add_right this (-4),
-have x < 3 + -4, by simpa only [add_assoc, add_add_neg_cancel'_right],
-show x < -1, by assumption
+)
+sorry
 
 -- Any x will satisfy this because x^2 is non-negative by definition.
 example : 5 - (x^2) < 8 :=
@@ -351,43 +352,50 @@ def ex_xii : ∀ (x : ℕ), ↑x + (3 : ℤ)^x < 4 → x = 0
 
 -- (xiii)
 
--- The first two hypotheses are here because otherwise we would have division by
--- zero, which is always undefined.
-example (x : ℝ) : x ≠ 0 → x ≠ 1 → 0 < x⁻¹ + (1 - x)⁻¹ → 0 < x ∧ x < 1 :=
-assume hZero hOne h,
-have 1 - x ≠ 0, from sub_ne_zero.mpr (ne.symm hOne),
-have h1 : x⁻¹ + (1-x)⁻¹ = (x + (1 -x)) / (x * (1 - x)), from inv_add_inv hZero this,
-have h2 : (x + (1 -x)) / (x * (1 - x)) = 1 / (x * (1 - x)), by ring,
-have 0 < 1 / (x * (1 - x)), by rwa [h1, h2] at h,
-have 0 < (x * (1 - x)), from one_div_pos.mp this,
-have h3 : x^2 < x, by linarith only [this],
-have h4 : 0 < x, from gt_of_gt_of_ge h3 (pow_two_nonneg x),
-have x < 1, from by_contradiction (
-    assume (h : ¬ (x < 1)),
-    have 1 ≤ x, from not_lt.mp h,
-    have x ≤ x * x, from (le_mul_iff_one_le_left h4).mpr this,
-    have x ≤ x^2, by rwa [<-pow_two] at this,
-    have ¬(x^2 < x), from not_lt.mpr this,
-    absurd h3 this
-),
-⟨h4, this⟩
+example (x : ℝ) : 0 < x⁻¹ + (1 - x)⁻¹ ↔ 0 < x ∧ x < 1 :=
+iff.intro
+(
+    assume hZero hOne h,
+    have 1 - x ≠ 0, from sub_ne_zero.mpr (ne.symm hOne),
+    have h1 : x⁻¹ + (1-x)⁻¹ = (x + (1 -x)) / (x * (1 - x)), from inv_add_inv hZero this,
+    have h2 : (x + (1 -x)) / (x * (1 - x)) = 1 / (x * (1 - x)), by ring,
+    have 0 < 1 / (x * (1 - x)), by rwa [h1, h2] at h,
+    have 0 < (x * (1 - x)), from one_div_pos.mp this,
+    have h3 : x^2 < x, by linarith only [this],
+    have h4 : 0 < x, from gt_of_gt_of_ge h3 (pow_two_nonneg x),
+    have x < 1, from by_contradiction (
+        assume (h : ¬ (x < 1)),
+        have 1 ≤ x, from not_lt.mp h,
+        have x ≤ x * x, from (le_mul_iff_one_le_left h4).mpr this,
+        have x ≤ x^2, by rwa [<-pow_two] at this,
+        have ¬(x^2 < x), from not_lt.mpr this,
+        absurd h3 this
+    ),
+    ⟨h4, this⟩
+)
+sorry
 
 -- (xiv)
 
-example (x : ℝ) : x < -1 ∨ x > 1 → 0 < (x - 1) / (x + 1) :=
+example (x : ℝ) : x < -1 ∨ x > 1 ↔ 0 < (x - 1) / (x + 1) :=
 begin
-    intros h,
-    rcases h with xLt | xGt,
+    split,
     {
-        have numerator : x - 1 < 0, by linarith only [xLt],
-        have denom : x + 1 < 0, by linarith only [xLt],
-        exact div_pos_of_neg_of_neg numerator denom,
+
+        intros h,
+        rcases h with xLt | xGt,
+        {
+            have numerator : x - 1 < 0, by linarith only [xLt],
+            have denom : x + 1 < 0, by linarith only [xLt],
+            exact div_pos_of_neg_of_neg numerator denom,
+        },
+        {
+            have numerator : 0 < x - 1, by linarith only [xGt],
+            have denom : 0 < x + 1, by linarith only [xGt],
+            exact div_pos numerator denom
+        }
     },
-    {
-        have numerator : 0 < x - 1, by linarith only [xGt],
-        have denom : 0 < x + 1, by linarith only [xGt],
-        exact div_pos numerator denom
-    }
+    sorry
 end
     -- intros hNonNegOne h,
     -- rcases (lt_trichotomy x (-1)) with xLt | xEq | xGt,
