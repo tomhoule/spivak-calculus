@@ -128,7 +128,18 @@ section v
 
                         ... = (a - b) * gizmo a b (n+1) : by rw next_gizmo n
 
+
+    def pow_pow_sub_five (x y : α) : x^5 - y^5 = (x-y) * (x^4 + x^3*y + x^2*y^2 + x*y^3 + y^4) :=
+    have h1 : gizmo x y 4 = x^(4-0)*y^0 + (x^(4-1)*y^(0+1) + (x^(4-2)*y^(0+2) + (x^(4-3)*y^(0+3) + (x^(4-4)*y^(0+4) + 0)))), from rfl,
+    have h2 : x^(4-0)*y^0 + (x^(4-1)*y^(0+1) + (x^(4-2)*y^(0+2) + (x^(4-3)*y^(0+3) + (x^(4-4)*y^(0+4) + 0)))) =
+        x^4 + x^3*y + x^2*y^2 + x*y^3 + y^4, by rw [
+            <-add_assoc, <-add_assoc, <-add_assoc, <-add_assoc, add_zero, pow_zero x, pow_zero y, mul_one, one_mul, pow_one x, pow_one y
+        ],
+    have x^5-y^5 = (x-y) * gizmo x y 4, by rw [pow_pow_sub 5 (by norm_num)],
+    by rwa [h1, h2] at this
 end v
+
+
 
 -- (vi)
 def cube_cube_add : a^3 + b^3 = (a + b) * (a^2 - (a * b) + b^2) :=

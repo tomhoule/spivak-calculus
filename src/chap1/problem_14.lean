@@ -43,7 +43,7 @@ iff.intro
                 have l2 : abs a = a, from abs_of_nonneg anonneg,
                 have left : -b ≤ a, from le_trans l1 anonneg,
                 have right : a ≤ b, by rwa [l2] at absALeB,
-                and.intro left right
+                ⟨left, right⟩
             )
             (λ aneg,
                 have l2 : abs a = -a, from abs_of_neg aneg,
@@ -51,7 +51,7 @@ iff.intro
                 have 0 ≤ b + - - a, by rwa [l2] at this,
                 have left : -b ≤ a, by linarith only [this],
                 have right : a ≤ b, from le_trans (le_of_lt aneg) bnonneg,
-                and.intro left right
+                ⟨left, right⟩
             )
     )
 

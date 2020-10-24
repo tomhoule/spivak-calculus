@@ -47,9 +47,9 @@ split,
 },
 intro h,
 rcases h with ⟨xLtEleven, xGtNegFive⟩,
-rcases (self_or_neg_self_of_abs (x-3)) with hNonneg | hNonpos,
-{ sorry },
-sorry
+rcases (self_or_neg_self_of_abs (x-3)) with ⟨_, hAbs⟩ | ⟨_, hAbs⟩,
+{ linarith only [hAbs, xLtEleven, xGtNegFive] },
+linarith only [hAbs, xGtNegFive]
 end
 
 -- (iii)
@@ -219,30 +219,108 @@ end
 
 -- (viii)
 
--- Divide both sides by 3, then compute inverses.
-example : abs (x - 1) * abs (x + 2) = 3 ↔ x < 1 :=
+open real (sqrt)
+
+-- def viii_helper1 : abs (x-1) = abs (x+2) / 3 → x = 5/2 ∨ x = 1/4 :=
+-- begin
+--     intro h,
+--     rcases (le_or_gt 0 (x-1)) with hNonneg | hNeg;
+--     rcases (le_or_gt 0 (x+2)) with hNonneg' | hNeg',
+--     {
+--         have : x - 1 = (x + 2) / 3, by rwa [abs_of_nonneg hNonneg, abs_of_nonneg hNonneg'] at h,
+--         left, show x = 5/2, by linarith only [this]
+--     },
+--     {
+--         have left : 0 ≤ x, by linarith,
+--         have right : 0 > x, by linarith,
+--         apply false.elim,
+--         apply absurd,
+--         exact left,
+--         exact not_le.mpr right
+--     },
+--     {
+--         have : -(x-1) = (x+2)/3, by rwa [abs_of_neg hNeg, abs_of_nonneg hNonneg'] at h,
+--         right, show x = 1/4, by linarith only [this],
+--     },
+--     {
+--         have : -(x-1) = -(x+2)/3, by rwa [abs_of_neg hNeg, abs_of_neg hNeg'] at h,
+--         left, show x = 5/2, by linarith only [this],
+--     }
+-- end
+
+example :
+    (abs (x - 1) * abs (x + 2) = 3) ↔
+    x = (sqrt 21 - 1) / 2 ∨ x = -(sqrt 21 + 1)/2 :=
 begin
     split,
     {
-        intro h,
-        rcases (lt_trichotomy x 1) with xLt | xEq | xGt,
+        intros h,
+        have sqrtFour : sqrt 4 = 2, by rw [show 4 = (2:real)^2, by norm_num, real.sqrt_sqr (show (0:real) ≤ 2, by norm_num)],
+        rcases (le_or_gt 0 (x-1)) with hNonneg | hNeg;
+        rcases (le_or_gt 0 (x+2)) with hNonneg' | hNeg',
         {
-            have left : abs (x-1) = -(x - 1), exact (abs_of_neg $ by linarith only [xLt]),
-            -- have right : abs (x+2) = -(x + 2), exact (abs_of_neg $ by linarith only [xLt]),
-            -- have : (x - 1) * (x + 2) = 3, by rwa [left, right] at h,
-            sorry
+            have h' : (x + 1/2) * (x + 1/2) = x^2 + x + 1/4, by linarith,
+            have h'' : 0 ≤ (x + 1/2), by linarith only [hNonneg],
+            have : (x-1) * (x+2) = 3, by rwa [abs_of_nonneg hNonneg, abs_of_nonneg hNonneg'] at h,
+            have : (x + 1/2) * (x + 1/2) - 1/4 = 5, by linarith only [this],
+            have : (x + 1/2)^2 = 21/4, by linarith only [this, pow_two (x + 1/2)],
+            have : sqrt ((x+1/2)^2) = sqrt (21/4), from congr_arg sqrt this,
+            have : (x+1/2) = sqrt 21 / 2, by rwa [real.sqrt_sqr h'', real.sqrt_div (show (0:real) <= 21, by norm_num), sqrtFour] at this,
+            left, show x = (sqrt 21 - 1)/ 2, by linarith only [this]
         },
         {
-            have : abs (x-1) = 0, rw [(show x-1 = 0, by linarith only [xEq]), abs_zero],
-            have : abs (x - 1) * abs (x + 2) = 0, rw [this, zero_mul],
-            linarith only [this, h]
+            have xNeg : 0 > x, by linarith only [hNeg'],
+            have xNonneg : 0 ≤ x, by linarith only [hNonneg],
+            exact absurd xNeg (not_lt.mpr xNonneg)
         },
-        have left : abs (x-1) = x - 1, exact (abs_of_pos $ by linarith only [xGt]),
-        have right : abs (x+2) = x + 2, exact (abs_of_pos $ by linarith only [xGt]),
-        have : (x - 1) * (x + 2) = 3, by rwa [left, right] at h,
-        have : x^2 + x = 5, by linarith only [this],
-        sorry
-     },
+        {
+            have : -(x-1) * (x+2) = 3, by rwa [abs_of_neg hNeg, abs_of_nonneg hNonneg'] at h,
+            have : (x+1/2)^2 = -3/4, by linarith only [this, pow_two (x+1/2)],
+            have hNeg : (x+1/2)^2 < 0, by linarith only [this],
+            have hNonneg : (x+1/2)^2 ≥ 0, from pow_two_nonneg (x+1/2),
+            exact absurd hNeg (not_lt.mpr hNonneg)
+        },
+        have h' : x + 1/2 < 0, by linarith only [hNeg'],
+        have : -(x-1) * -(x+2) = 3, by rwa [abs_of_neg hNeg, abs_of_neg hNeg'] at h,
+        have : (x + 1/2)^2 = 21/4, by linarith only [this, pow_two (x + 1/2)],
+        have : sqrt ((x+1/2)^2) = sqrt (21/4), from congr_arg sqrt this,
+        have : abs (x+1/2) = sqrt 21 / 2, by rwa [pow_two, real.sqrt_mul_self_eq_abs, real.sqrt_div (show (0:real) <= 21, by norm_num), sqrtFour] at this,
+        have : -(x+1/2) = sqrt 21 / 2, by rwa [abs_of_neg h'] at this,
+        right, linarith only [this]
+    },
     intro h,
-    sorry
+    have : sqrt 16 < sqrt 21, from (real.sqrt_lt (show (0:real) ≤ 16, by norm_num) (by norm_num)).elim_right (by norm_num),
+    have : 4 < sqrt 21, by rwa [(show 16 = (4:real)^2, by norm_num), real.sqrt_sqr (show (0:real) ≤ 4, by norm_num)] at this,
+    have helper1 : (sqrt 21 - 3) * (sqrt 21 + 3) = 12, from (
+        have h1 : (0:real) <= 21, by norm_num,
+        calc
+        (sqrt 21 - 3) * (sqrt 21 + 3) = sqrt 21 * sqrt 21 - 9 : by linarith
+        ... = 21 - 9 : by rwa [<-real.sqrt_mul, real.sqrt_mul_self h1]
+        ... = 12 : by norm_num
+    ),
+    rcases h with h | h,
+    {
+        have left : abs (x - 1) = x - 1, from abs_of_pos (by linarith),
+        have right : abs (x + 2) = x + 2, from abs_of_pos (by linarith),
+        calc
+        abs (x-1) * abs (x+2) = (x-1) * (x+2) : by rwa [left, right]
+        ... = ((sqrt 21 - 1)/2 -1) * ((sqrt 21 - 1)/2 + 2) : by rw [h]
+        ... = ((sqrt 21 -3)/2) * ((sqrt 21 + 3)/2) : by linarith
+        ... = ((sqrt 21 - 3) * (sqrt 21 + 3)) / (2*2) : div_mul_div (sqrt 21 - 3) 2 (sqrt 21 + 3) 2
+        ... = ((sqrt 21 - 3) * (sqrt 21 + 3)) / 4 : by norm_num
+        ... = 12 / 4 : by rw [helper1]
+        ... = 3 : by norm_num
+    },
+    have left : abs (x-1) = -(x-1), from abs_of_neg (by linarith),
+    have right : abs (x+2) = -(x+2), from abs_of_neg (by linarith),
+    calc
+    abs (x-1) * abs (x+2) = -(x-1) * -(x+2) : by rwa [left, right]
+    ... = -((-(sqrt 21 + 1)/2) - 1) * -((-(sqrt 21 + 1)/2) + 2) : by rw [h]
+    ... = ((-(sqrt 21 + 1)/2) - 1) * ((-(sqrt 21 + 1)/2) + 2) : neg_mul_neg (-(sqrt 21 + 1) / 2 - 1) (-(sqrt 21 + 1) / 2 + 2)
+    ... = ((-sqrt 21 - 3)/2) * ((-sqrt 21 + 3)/2) : by linarith
+    ... = ((-sqrt 21 - 3) * (-sqrt 21 + 3)) / (2*2) : div_mul_div (-sqrt 21 - 3) 2 (-sqrt 21 + 3) 2
+    ... = ((-sqrt 21 - 3) * (-sqrt 21 + 3)) / 4 : by norm_num
+    ... = ((sqrt 21 - 3) * (sqrt 21 + 3)) / 4 : by linarith
+    ... = 12 / 4 : by rw [helper1]
+    ... = 3 : by norm_num
 end

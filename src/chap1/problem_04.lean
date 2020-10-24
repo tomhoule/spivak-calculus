@@ -23,7 +23,7 @@ iff.intro
     show x < -1, by assumption
 
 )
-sorry
+(assume h, by linarith only [h])
 
 -- Any x will satisfy this because x^2 is non-negative by definition.
 example : 5 - (x^2) < 8 :=
@@ -190,9 +190,9 @@ have leftN : 0 > (x - pi) → pi > x, from assume h, by linarith only [h],
 have middleN : 0 > (x + 5) → -5 > x, from assume h, by linarith only [h],
 have rightN : 0 > x - 3 → 3 > x, from assume h, by linarith only [h],
 by begin
-    rcases (lt_trichotomy 0 (x - pi)) with leftPos | leftZero | leftNeg,
-    all_goals { rcases (lt_trichotomy 0 (x + 5)) with middlePos | middleZero | middleNeg },
-    all_goals { rcases (lt_trichotomy 0 (x - 3)) with rightPos | rightZero | rightNeg },
+    rcases (lt_trichotomy 0 (x - pi)) with leftPos | leftZero | leftNeg;
+    rcases (lt_trichotomy 0 (x + 5)) with middlePos | middleZero | middleNeg;
+    rcases (lt_trichotomy 0 (x - 3)) with rightPos | rightZero | rightNeg,
     -- Eliminate the zero cases
     any_goals {
         have hZero : 0 = (x - pi) * (x + 5) * (x - 3), by rw [<-rightZero, mul_zero] <|> rw [<-leftZero, zero_mul, zero_mul] <|> rw [<-middleZero, mul_zero, zero_mul],
@@ -352,18 +352,20 @@ def ex_xii : ∀ (x : ℕ), ↑x + (3 : ℤ)^x < 4 → x = 0
 
 -- (xiii)
 
-example (x : ℝ) : 0 < x⁻¹ + (1 - x)⁻¹ ↔ 0 < x ∧ x < 1 :=
-iff.intro
-(
-    assume hZero hOne h,
-    have 1 - x ≠ 0, from sub_ne_zero.mpr (ne.symm hOne),
+example (x : ℝ) : x ≠ 0 → x ≠ 1 → (0 < x⁻¹ + (1 - x)⁻¹ ↔ 0 < x ∧ x < 1) :=
+begin
+intros hZero hOne,
+split,
+{
+    intro h,
+    have : 1 - x ≠ 0, from sub_ne_zero.mpr (ne.symm hOne),
     have h1 : x⁻¹ + (1-x)⁻¹ = (x + (1 -x)) / (x * (1 - x)), from inv_add_inv hZero this,
     have h2 : (x + (1 -x)) / (x * (1 - x)) = 1 / (x * (1 - x)), by ring,
-    have 0 < 1 / (x * (1 - x)), by rwa [h1, h2] at h,
-    have 0 < (x * (1 - x)), from one_div_pos.mp this,
+    have : 0 < 1 / (x * (1 - x)), by rwa [h1, h2] at h,
+    have : 0 < (x * (1 - x)), from one_div_pos.mp this,
     have h3 : x^2 < x, by linarith only [this],
     have h4 : 0 < x, from gt_of_gt_of_ge h3 (pow_two_nonneg x),
-    have x < 1, from by_contradiction (
+    have : x < 1, from by_contradiction (
         assume (h : ¬ (x < 1)),
         have 1 ≤ x, from not_lt.mp h,
         have x ≤ x * x, from (le_mul_iff_one_le_left h4).mpr this,
@@ -371,9 +373,15 @@ iff.intro
         have ¬(x^2 < x), from not_lt.mpr this,
         absurd h3 this
     ),
-    ⟨h4, this⟩
-)
-sorry
+    exact ⟨h4, this⟩
+},
+intro h,
+rcases h with ⟨xPos, xLtOne⟩,
+have left : 0 < x⁻¹, exact inv_pos.mpr xPos,
+have : 0 < (1 - x), by linarith only [xLtOne],
+have right : 0 < (1 - x)⁻¹, exact inv_pos.mpr this,
+exact add_pos left right
+end
 
 -- (xiv)
 
@@ -395,14 +403,10 @@ begin
             exact div_pos numerator denom
         }
     },
-    sorry
+    intro h,
+    rcases (lt_or_ge x (-1)) with xLtNegOne | xGeNegOne;
+    rcases (le_or_gt x 1) with xLeOne | xGtOne,
+    any_goals { { left, exact xLtNegOne } <|> { right, exact xGtOne } },
+    have : 0 ≥ (x - 1) / (x + 1), apply div_nonpos_of_nonpos_of_nonneg, linarith only [xLeOne], linarith only [xGeNegOne],
+    exact (false.elim $ absurd h (not_lt_of_ge this))
 end
-    -- intros hNonNegOne h,
-    -- rcases (lt_trichotomy x (-1)) with xLt | xEq | xGt,
-    -- any_goals { have : x = -1, from xEq, by contradiction },
-    -- {
-    --     have numerator : x - 1 < -2, by linarith only [xLt],
-    --     have denom : 0 > x + 1, by linarith only [xLt],
-    --     or.inl xLt
-    -- },
-    -- sorry
