@@ -217,47 +217,6 @@ split,
         },
         have : x^2 + (x*y) > 0, by linarith [abs_of_neg hGt],
         linarith
-        -- rcases (lt_trichotomy x y) with xLt | xEq | xGt,
-        -- swap,
-        -- {
-        --     rcases (em (x = 0)) with xZero | xNonzero,
-        --     { left, exact xZero },
-        --     have xSqPos : x^2 > 0, from pow_two_pos_of_ne_zero x xNonzero,
-        --     have ySqPos : y^2 > 0, by rwa [xEq] at xSqPos,
-        --     have ySqPos : x*y = x^2, by conv {
-        --         to_lhs,
-        --         rw <-xEq,
-        --         rw <-pow_two
-        --     },
-        --     have : x^2 + x*y + y^2 > 0, by linarith,
-        --     apply absurd, exact leftZero, exact (ne_of_gt this)
-        -- },
-        -- sorry,
-        -- sorry
-        -- rcases (lt_trichotomy 0 x) with xPos | xZero | xNeg;
-        -- rcases (lt_trichotomy 0 y) with yPos | yZero | yNeg,
-        -- any_goals { left, exact (eq.symm xZero) },
-        -- any_goals { right, left, exact (eq.symm yZero) },
-        -- all_goals {
-        --     have xNonzero : x ≠ 0, by linarith,
-        --     have yNonzero : y ≠ 0, by linarith,
-        --     have xSqPos : x^2 > 0, from pow_two_pos_of_ne_zero x xNonzero,
-        --     have ySqPos : y^2 > 0, from pow_two_pos_of_ne_zero y yNonzero,
-        -- },
-        -- any_goals {
-        --     have : 0 < x*y, by { exact mul_pos xPos yPos <|> exact mul_pos_of_neg_of_neg xNeg yNeg },
-        --     linarith [add_pos xSqPos this],
-        --     done
-        -- },
-        -- all_goals {
-        --     have mulNeg : 0 > x*y, by { exact mul_neg_of_pos_of_neg xPos yNeg <|> exact mul_neg_of_neg_of_pos xNeg yPos },
-        -- },
-        -- {
-        --     rcases (le_or_gt (abs x) (abs y)) with hLe | hGt,
-        --     { sorry },
-        --     sorry
-        -- },
-        -- sorry,
     },
     right, right, linarith only [rightZero]
 },
