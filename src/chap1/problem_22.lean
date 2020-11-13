@@ -93,7 +93,7 @@ abs y0 / 2 = abs y0 - (abs y0 / 2) : by linarith
 end
 
 -- # And now, the proof.
-example :
+def problem_22 :
     y0 ≠ 0 →
     abs (y-y0) < min (abs y0/2) ((ε*(abs y0)^2)/2) →
     y ≠ 0 ∧ abs (1/y - 1/y0) < ε

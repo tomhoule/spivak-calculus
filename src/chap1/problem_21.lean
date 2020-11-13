@@ -34,7 +34,7 @@ have h1 : y ≤ 2 * (y+1), by linarith,
 have x * y ≤ x * (2*(y+1)), from mul_le_mul (le_of_eq rfl) h1 yNonneg xNonneg,
 by rwa [mul_comm, mul_comm] at this
 
-example :
+def problem_21 :
     abs (x-x0) < min (ε / (2*(abs y0 + 1))) 1 →
     abs (y-y0) < ε / (2*(abs x0 + 1)) →
     abs (x*y - x0*y0) < ε
