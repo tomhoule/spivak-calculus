@@ -6,7 +6,7 @@ import tactic.algebra
 import tactic.suggest
 import tactic.linarith
 
-variables {α : Type } [discrete_linear_ordered_field α]
+variables {α : Type } [linear_ordered_field α]
 variables {a b c d : α}
 
 open int

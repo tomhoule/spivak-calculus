@@ -7,7 +7,7 @@ import algebra.order
 namespace properties
     open field
 
-    variables (α : Type) [discrete_linear_ordered_field α]
+    variables (α : Type) [linear_ordered_field α]
     variables (a b c : α)
     variables (x : ℚ)
 

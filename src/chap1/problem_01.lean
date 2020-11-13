@@ -1,7 +1,7 @@
 import algebra.ordered_field
 import algebra.big_operators
 
-variables {α : Type} [discrete_linear_ordered_field α]
+variables {α : Type} [linear_ordered_field α]
 variables {a b : α}
 
 -- (i)

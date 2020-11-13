@@ -1,8 +1,8 @@
 import data.rat.basic
 import algebra.ordered_field
-import chap1.problem_1
+import chap1.problem_01
 
-variables {α : Type} [discrete_linear_ordered_field α] [comm_group α]
+variables {α : Type} [linear_ordered_field α] [comm_group α]
 variables {a b c d : α}
 
 -- (i)

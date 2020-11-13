@@ -29,7 +29,7 @@ iff.intro
 example : 5 - (x^2) < 8 :=
 have 0 ≤ x^2, from pow_two_nonneg x,
 have h1 : -(x^2) ≤ 0, from neg_nonpos_of_nonneg this,
-have (5 : ℤ) < (8 : ℤ), by simpa only [],
+have (5 : ℤ) < (8 : ℤ), by norm_num,
 have -(x^2) + 5 < 8, from add_lt_of_nonpos_of_lt h1 this,
 show 5 -(x^2) < 8, by rwa [add_comm] at this
 
@@ -44,7 +44,7 @@ def mul_cast_self : ∀ (a : ℤ), (↑(a * a) : ℝ) = (↑a : ℝ) * (↑a : �
 -- (iii)
 example : 5 - (x^2) < -2 → (real.sqrt (↑7) < abs ↑x) :=
 assume h,
-have 0 ≤ (7 : ℤ), by simpa only [],
+have 0 ≤ (7 : ℤ), by norm_num,
 have sevennonneg : 0 ≤ (↑7 : ℝ), from int.cast_nonneg.elim_right this,
 have absx_mul_nonneg : 0 ≤ (abs ↑x : ℝ) * abs ↑x, from (
     have 0 ≤ (abs ↑x : ℝ), from abs_nonneg (↑x),

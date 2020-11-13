@@ -22,11 +22,11 @@ begin
     rcases h with xZero | yZero,
     {
         have : (x + y)^2 = y^2, by rw [xZero, zero_add],
-        have : x^2 + y^2 = y^2, by rw [xZero, zero_pow two_pos, zero_add],
+        have : x^2 + y^2 = y^2, by rw [xZero, zero_pow zero_lt_two, zero_add],
         cc
     },
     have : (x + y)^2 = x^2, by rw [yZero, add_zero],
-    have : x^2 + y^2 = x^2, by rw [yZero, zero_pow two_pos, add_zero],
+    have : x^2 + y^2 = x^2, by rw [yZero, zero_pow zero_lt_two, add_zero],
     cc
 end
 
@@ -89,8 +89,8 @@ split,
     by rwa [<-h1] at this
 },
 rintros (h) (⟨xZero, yZero⟩),
-have l1 : x^2 = 0, by rw [xZero, zero_pow two_pos],
-have l2 : y^2 = 0, by rw [yZero, zero_pow two_pos],
+have l1 : x^2 = 0, by rw [xZero, zero_pow zero_lt_two],
+have l2 : y^2 = 0, by rw [yZero, zero_pow zero_lt_two],
 have : 4*x^2 + 6*x*y + 4*y^2 = 0, by norm_num [h, l1, l2, yZero, xZero],
 apply absurd,
 exact this,
@@ -177,8 +177,8 @@ split,
         left, exact xZero,
         rcases (em (y = 0)) with yZero | yNonzero,
         right, left, exact yZero,
-        have absXPos : abs x > 0, from abs_pos_iff.mpr xNonzero,
-        have absYPos : abs y > 0, from abs_pos_iff.mpr yNonzero,
+        have absXPos : abs x > 0, from abs_pos.mpr xNonzero,
+        have absYPos : abs y > 0, from abs_pos.mpr yNonzero,
         have xSqPos : x^2 > 0, from pow_two_pos_of_ne_zero x xNonzero,
         have ySqPos : y^2 > 0, from pow_two_pos_of_ne_zero y yNonzero,
         rcases (lt_trichotomy (abs x) (abs y)) with hLt | hEq | hGt,

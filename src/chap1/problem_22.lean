@@ -42,7 +42,7 @@ end
 def isolateε : a < (ε * (abs y0)^2) / 2 → 0 ≠ y0→ a / ((abs y0^2) / 2) < ε :=
 begin
 intros h h',
-have h' : 0 < abs y0, from abs_pos_iff.mpr (ne.symm h'),
+have h' : 0 < abs y0, from abs_pos.mpr (ne.symm h'),
 have h' : 0 < (abs y0)^2, from pow_two_pos_of_ne_zero (abs y0) (ne.symm $ ne_of_lt h'),
 have h' : 0 < (abs y0)^2 / 2, from half_pos h',
 have : a < ((abs y0)^2 / 2) * ε, by linarith,
@@ -59,7 +59,7 @@ calc
     ... ≤ abs y + abs (-y0) : abs_add y (-y0)
     ... = abs y + abs y0 : by rw [abs_neg]
 
-example : abs y - abs y0 ≤ abs (y-y0) := sub_abs_le_abs_sub y y0
+example : abs y - abs y0 ≤ abs (y-y0) := abs_sub_abs_le_abs_sub y y0
 
 
 --
@@ -88,7 +88,7 @@ calc
 abs y0 / 2 = abs y0 - (abs y0 / 2) : by linarith
 ... < abs y0 - abs (y-y0) : by linarith
 ... = abs y0 - abs (y0-y) : by rwa [abs_sub]
-... ≤ abs (y0 - (y0 - y)) : sub_abs_le_abs_sub y0 (y0 - y)
+... ≤ abs (y0 - (y0 - y)) : abs_sub_abs_le_abs_sub y0 (y0 - y)
 ... ≤ abs y : by rw [sub_sub_assoc_swap, add_comm, add_sub_assoc, sub_self y0, add_zero]
 end
 
@@ -101,7 +101,7 @@ def problem_22 :
 begin
 intros y0Nonzero h,
 rcases (lt_min_iff.mp h) with ⟨hLeft, hRight⟩,
-have absy0Pos : 0 < abs y0, from abs_pos_iff.mpr y0Nonzero,
+have absy0Pos : 0 < abs y0, from abs_pos.mpr y0Nonzero,
 have absy0Nonzero : abs y0 ≠ 0, from ne_of_gt absy0Pos,
 have yNonzero : y ≠ 0, from by_contradiction (
     assume h,
@@ -110,17 +110,17 @@ have yNonzero : y ≠ 0, from by_contradiction (
         calc
         abs (y-y0) = abs(0-y0) : by rw [yZero]
         ... = abs y0 : by rw [zero_sub, abs_neg]
-        ... > abs y0 / 2 : div_two_lt_of_pos (abs_pos_iff.mpr y0Nonzero)
+        ... > abs y0 / 2 : div_two_lt_of_pos (abs_pos.mpr y0Nonzero)
     ),
     absurd (not_lt.mpr (le_of_lt this)) (not_not.mpr hLeft)
 ),
 split, exact yNonzero,
 
-have absYPos : 0 < abs y, from abs_pos_iff.mpr yNonzero,
+have absYPos : 0 < abs y, from abs_pos.mpr yNonzero,
 have denomPos : 0 < (abs y0)^2 / 2, by linarith [pow_pos absy0Pos 2],
 
 have isolateε : abs (y-y0) / ((abs y0^2) / 2) < ε, from isolateε hRight (ne.symm y0Nonzero),
-have denomLt : abs y0 * (abs y0 / 2) < abs y0 * abs y, from (mul_lt_mul_left (abs_pos_iff.mpr y0Nonzero)).mpr (absYGtHalfY0 hLeft),
+have denomLt : abs y0 * (abs y0 / 2) < abs y0 * abs y, from (mul_lt_mul_left (abs_pos.mpr y0Nonzero)).mpr (absYGtHalfY0 hLeft),
 have denomLt : (abs y0^2) / 2 < abs y0 * abs y, by rwa [<-mul_div_assoc, <-pow_two] at denomLt,
 have divLe : abs (y-y0) / (abs y0 * abs y) ≤ abs (y-y0) / (abs y0^2 / 2), from div_le_div (abs_nonneg (y-y0)) (le_of_eq rfl) denomPos (le_of_lt denomLt),
 

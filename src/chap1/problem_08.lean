@@ -4,9 +4,9 @@ variables { a b c : ℝ }
 
 -- First definitions
 
-noncomputable def p10' : discrete_linear_ordered_field ℝ := by apply_instance
+noncomputable def p10' : linear_ordered_field ℝ := by apply_instance
 
-def p11' : a < b → b < c → a < c := lt.trans
+def p11' : a < b → b < c → a < c := lt_trans
 
 def p12' : a < b → a + c < b + c := (add_lt_add_iff_right c).mpr
 

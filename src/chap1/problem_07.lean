@@ -66,7 +66,7 @@ have 0 < (sqrt a - sqrt b)^2, by rwa [←pow_two] at this,
 have 0 < a + b - 2*(sqrt a * sqrt b), by rwa [←l3] at this,
 have 0 + 2*(sqrt a * sqrt b) < a + b - 2*(sqrt a * sqrt b) + 2*(sqrt a * sqrt b), from add_lt_add_right this (2*(sqrt a * sqrt b)),
 have 2*(sqrt a * sqrt b) < a + b, by simpa only [sub_add_cancel, zero_add],
-have 2*(sqrt a * sqrt b) / 2 < (a + b) / 2, from div_lt_div this (le_of_eq rfl) (le_of_lt aplusbpos) two_pos,
+have 2*(sqrt a * sqrt b) / 2 < (a + b) / 2, from div_lt_div this (le_of_eq rfl) (le_of_lt aplusbpos) zero_lt_two,
 have (sqrt a * sqrt b)*2 / 2 < (a + b) / 2, by rwa [mul_comm] at this,
 have sqrt a * sqrt b < (a + b) / 2, by rwa [mul_div_cancel (sqrt a * sqrt b) two_ne_zero] at this,
 by rwa [←real.sqrt_mul (le_of_lt apos)] at this
@@ -76,7 +76,7 @@ have beq : (b+b)/2 = b, from half_add_self b,
 have bpos : 0 < b, from lt_trans apos altb,
 have bplusbpos : 0 < b + b, from add_pos bpos bpos,
 have a + b < b + b, from add_lt_add_right altb b,
-have (a + b)/2 < (b + b)/2, from div_lt_div this (le_of_eq rfl) (le_of_lt bplusbpos) two_pos,
+have (a + b)/2 < (b + b)/2, from div_lt_div this (le_of_eq rfl) (le_of_lt bplusbpos) zero_lt_two,
 show (a+b)/2 < b, by rwa [beq] at this
 
 end problem7

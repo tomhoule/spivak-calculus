@@ -4,8 +4,8 @@ import tactic.basic
 import tactic.suggest
 import data.int.parity
 
-variables {α : Type } [discrete_linear_ordered_field α]
-variables {a b c d : α} {n : ℕ}
+variables { α : Type } [linear_ordered_field α]
+variables { a b c d : α } { n : ℕ }
 
 -- (a)
 theorem pow_lt : ∀ (n : ℕ), 0 < n → 0 ≤ a → a < b → a^n < b^n
@@ -66,7 +66,7 @@ theorem odd_pow_lt : ∀ (n : ℕ), a < b → n % 2 = 1 → a^n < b^n
                     by contradiction
                 )
                 (λ bneg,
-                    have a < 0, from gt.trans bneg altb,
+                    have a < 0, from gt_trans bneg altb,
                     have ¬(0 < a), from not_lt_of_lt this,
                     by contradiction
                 )

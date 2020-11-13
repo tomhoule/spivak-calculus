@@ -69,7 +69,7 @@ or.elim (le_or_gt 0 x)
 
 def ii : x ≠ 0 → abs (1/x) = 1/(abs x) :=
 assume xnonzero,
-have absxpos : 0 < abs x, from abs_pos_iff.mpr xnonzero,
+have absxpos : 0 < abs x, from abs_pos.mpr xnonzero,
 have absxnonzero : 0 ≠ abs x, from ne_of_lt absxpos,
 have l1 : (abs x) * (abs x)⁻¹ = 1, from mul_inv_cancel (ne.symm absxnonzero),
 have l2 : 0 < x*x, from mul_self_pos xnonzero,
@@ -98,7 +98,7 @@ eq.symm $ by rwa [one_div]
 
 def iii : y ≠ 0 → abs x / abs y = abs (x/y) :=
 assume ynonzero,
-have 0 < abs y, from abs_pos_iff.mpr ynonzero,
+have 0 < abs y, from abs_pos.mpr ynonzero,
 have absynonzero : 0 ≠ abs y, from ne_of_lt this,
 calc
     abs x / abs y   = abs x * (1/(abs y)) : by rw [div_eq_mul_one_div]
