@@ -6,6 +6,8 @@ open real (sqrt)
 
 variables { a b c x y : ℝ }
 
+-- This was made before I was aware of norm_num and norm_cast. These would have
+-- made things easier.
 def lt_cast_int_to_real : ∀ (a b : ℤ), a < b → (a : ℝ) < (b : ℝ) :=
 assume a b h,
 have (↑a : ℚ) < ↑b, from int.cast_lt.elim_right h,
