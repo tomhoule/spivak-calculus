@@ -35,16 +35,12 @@ def part_i : ∀ (n : ℕ), ↑(∑ i in range (n+1), i^2) = ((↑n:ℚ)*(n+1)*(
 }
 
 -- (ii)
-def part_ii_aux : ∀ (n : ℕ), (((n+1)^3) : ℚ) + ((n * (n+1))/2)^2 = ↑(∑ i in range (n+1+1), i)^2 :=
+def part_ii_aux : ∀ (n : ℕ), (↑(n+1):ℚ)^3 + (↑(n * (n+1))/2)^2 = (↑((n+1) * (n+1+1))/2)^2 :=
 λ n,
--- have h1 : (↑(n * (n+1))/2) = ↑n * ↑(n+1)/↑2, by rw_mod_cast [mul_div_assoc],
-calc
-(((n+1)^3) : ℚ) + (↑(n * (n+1))/2)^2 = ↑((n+1) * (n+1)^2) + (↑(n * (n+1))/2) * ((↑(n * (n+1)))/2) : by rw [pow_two, pow_succ]
-... = (↑((n+1)*(n+1+1)) * ↑((n+1)*(n+1+1)))/2*2 : sorry
--- ... = (↑((n+1)*(n+1+1))/2)^2 : by rw [←div_mul_div (↑((n+1)*(n+1+1))) 2 (↑((n+1)*(n+1+1))) 2, pow_two]
-... = ↑(∑ i in range (n+1+1), i)^2 : sorry
+have h1 : ∀ (n : ℚ), (n+1)^3 + ((n * (n+1))/2)^2 = (((n+1) * (n+1+1))/2)^2, from λ n, by ring,
+by exact_mod_cast h1 n
 
-def part_ii : ∀ (n : ℕ), ↑(∑ i in range (n+1), i^3) = (↑(∑ i in range (n+1), i)^2 : rat)
+def part_ii : ∀ (n : ℕ), (↑(∑ i in range (n+1), i^3):ℚ) = ↑(∑ i in range (n+1), i)^2
 | 0 := (
     let n := 0 in
     have ∑ i in range (n+1), i^3 = 0, from rfl,
@@ -59,7 +55,7 @@ def part_ii : ∀ (n : ℕ), ↑(∑ i in range (n+1), i^3) = (↑(∑ i in rang
     (↑(∑ (i : ℕ) in range (n + 1 + 1), i ^ 3) : rat) = (↑((n+1)^3 + (∑ (i : ℕ) in range (n + 1), i ^ 3)) : rat) : by rw [succ]
     ... = ↑(n+1)^3 + ↑(∑ (i : ℕ) in range (n + 1), i ^ 3) : by norm_cast
     ... = ↑(n+1)^3 + ↑(∑ i in range (n+1), i)^2 : by rw [ih]
-    ... = ↑(n+1)^3 + ((n * (n+1))/2)^2 : by rw nat_seq_sum
-    ... = ((n+1)^3) + ((n * (n+1))/2)^2 : by norm_cast
-    ... = ↑(∑ i in range (n+1+1), i)^2 : by rw [part_ii_aux]
+    ... = ↑(n+1)^3 + (↑(n * (n+1))/2)^2 : by rw nat_seq_sum
+    ... = (↑((n+1) * (n+1+1))/2)^2 : by rw [part_ii_aux]
+    ... = ↑(∑ i in range (n+1+1), i)^2 : by rw [<-nat_seq_sum]
 }
