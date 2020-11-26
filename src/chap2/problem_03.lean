@@ -44,7 +44,7 @@ example : ∀ n, choose n 0 = 1 := (
     ... = 1 : div_self (by exact_mod_cast this)
 )
 
-example : ∀ n, choose n n = 1 := λ n,
+def choose_self : ∀ n, choose n n = 1 := λ n,
 have factorial n ≠ 0, from ne_of_gt (factorial_pos n),
 calc
     choose n n = factorial n / (factorial n * factorial (n-n)) : rfl
@@ -57,7 +57,6 @@ example : ∀ (a b c : ℚ), 0 ≠ a → 0 ≠ b → 0 ≠ c → (a * b) / (a * 
     intros a b c aNonzero bNonzero cNonzero,
     exact mul_div_mul_left b c (ne.symm aNonzero)
 }
-
 
 def part_a : ∀ n k, k < n → choose (n+1) (k+1) = choose n k + choose n (k+1) :=
 begin
@@ -100,5 +99,47 @@ begin
     ... = choose n (k+1) + choose n k : by rw [h3, h4]
     ... = choose n k + choose n (k+1) : by rw add_comm
 end
+
+def choose_n_zero : ∀ n, choose n 0 = 1 :=
+λ n,
+have factorial n ≠ 0, from ne_of_gt (factorial_pos n),
+have (↑(factorial n):rat) ≠ 0, by exact_mod_cast this,
+calc
+    choose n 0 = factorial n / (factorial 0 * factorial (n-0)) : rfl
+    ... = factorial n / (1 * factorial n) : rfl
+    ... = 1 : by rw [one_mul, div_self this]
+
+
+def part_b : ∀ (n k : ℕ), k ≤ n → ∃ (c : ℕ), choose n k = ↑c
+| 0 0 kLeN := ⟨1, rfl⟩
+| n 0 kLeN := (
+    have (1:rat) = ↑1, from rfl,
+    have choose n 0 = 1, from choose_n_zero n,
+    ⟨1, by cc⟩
+)
+| 0 k kLeN := (
+    have (1:rat) = ↑1, from rfl,
+    have t1 : k = 0, from le_zero_iff_eq.mp kLeN,
+    have choose 0 0 = 1, by refl,
+    have choose 0 k = choose 0 0, by rw [t1],
+    ⟨1, by cc⟩
+)
+| (n+1) (k+1) kLeN := by {
+    have kLeNPred : k ≤ n, from nat.succ_le_succ_iff.mp kLeN,
+    have ih : ∃ (c : ℕ), choose n k = ↑c, from part_b n k kLeNPred,
+    rcases (eq_or_lt_of_le kLeN) with kEqN | kLtN,
+    {
+        have : (1:rat) = ↑1, from rfl,
+        have : choose (n+1) (n+1) = 1, from choose_self (n+1),
+        exact ⟨1, by cc⟩
+    },
+    have kLeN : (k+1) ≤ n, from nat.lt_succ_iff.mp kLtN,
+    have ih2 : ∃ (c : ℕ), choose n (k+1) = ↑c, from part_b n (k+1) kLeN,
+    rcases ⟨ih, ih2⟩ with ⟨⟨ihC, _⟩, ⟨ih2C, _⟩⟩,
+    existsi (ihC + ih2C),
+    have : choose (n+1) (k+1) = choose n k + choose n (k+1), from part_a n k (show k < n, from nat.succ_le_iff.mp kLeN),
+    have : (↑ihC:rat) + ih2C =  ↑(ihC + ih2C), by norm_cast,
+    cc
+}
 
 end problem_03
