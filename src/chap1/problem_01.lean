@@ -137,6 +137,7 @@ section v
         ],
     have x^5-y^5 = (x-y) * gizmo x y 4, by rw [pow_pow_sub 5 (by norm_num)],
     by rwa [h1, h2] at this
+
 end v
 
 

@@ -1,7 +1,7 @@
 import data.nat.choose.basic
 import data.rat.basic
 import tactic.norm_num
-import tactic.linarith
+import algebra.big_operators.basic
 
 namespace problem_03
 
@@ -141,5 +141,49 @@ def part_b : ∀ (n k : ℕ), k ≤ n → ∃ (c : ℕ), choose n k = ↑c
     have : (↑ihC:rat) + ih2C =  ↑(ihC + ih2C), by norm_cast,
     cc
 }
+
+def part_c : ∀ (s : finset ℕ) (k : ℕ), ↑(finset.card { s' ∈ s.powerset | finset.card s' = k }) = choose (finset.card s) k := sorry
+
+section part_d
+
+    open_locale big_operators
+    open finset (range)
+
+    def part_d : ∀ (a b : ℚ) (n : ℕ), (a + b)^n = ∑ j in range (n+1), choose n j * a^(n-j) * b^j
+    | a b 0 := (
+        let n := 0 in
+        have left : (a + b)^n = 1, from pow_zero (a + b),
+        have right : ∑ j in range (n+1), choose n j * a^(n-j) * b^j = 1, from rfl,
+        eq.trans left right
+    )
+    | a b (n+1) := by {
+        have ih : (a + b)^n = ∑ j in range (n+1), choose n j * a^(n-j) * b^j, from part_d a b n,
+        have left : (a + b)^(n+1) = (a+b) * (a + b)^n, from pow_succ (a + b) n,
+        have right : ∑ j in range (n+1+1), choose (n+1) j * a^((n+1)-j) * b^j = (a+b) * ∑ j in range (n+1), choose n j * a^(n-j) * b^j, from eq.symm (
+            have h1 : a * ∑ j in range (n+1), (choose n j * a^(n-j) * b^j) = ∑ j in range (n+1), a * (choose n j * a^(n-j) * b^j), by refine (eq.symm $ finset.sum_hom _ _),
+            have h2 : ∀ j, a * (choose n j * a^(n-j) * b^j) = choose n j * a^(n+1-j) * b^j, from (
+                λ j,
+                have j ≤ n, from sorry,
+                have n-j + 1 = (n+1)-j, from nat.sub_add_eq_add_sub this,
+                calc
+                a * (choose n j * a^(n-j) * b^j) = choose n j * (a * a^(n-j)) * b^j : by simp [mul_assoc, mul_comm a]
+                ... = choose n j * a^(n-j + 1) * b^j : by rw [pow_succ]
+                ... = choose n j * a^(n+1-j) * b^j : by rw this
+            ),
+            have choose (n+1) (n+1) * a^0 * b^(n+1) = b^(n+1), by rw [choose_self, pow_zero, one_mul, one_mul],
+            calc
+            (a+b) * ∑ j in range (n+1), choose n j * a^(n-j) * b^j = a * ∑ j in range (n+1), choose n j * a^(n-j) * b^j + b * ∑ j in range (n+1), choose n j * a^(n-j) * b^j : by rw right_distrib
+            ... = ∑ j in range (n+1), a * (choose n j * a^(n-j) * b^j) + b * ∑ j in range (n+1), choose n j * a^(n-j) * b^j: by rw h1
+            ... = b^(n+1) + ∑ j in range (n+1), choose (n+1) j * a^((n+1)-j) * b^j : sorry
+            ... = (1 * b^(n+1)) + ∑ j in range (n+1), choose (n+1) j * a^((n+1)-j) * b^j : by rw one_mul
+            ... = (a^((n+1)-(n+1)) * b^(n+1)) + ∑ j in range (n+1), choose (n+1) j * a^((n+1)-j) * b^j : by rw [<-pow_zero a, nat.sub_self (n+1)]
+            ... = (1 * a^((n+1)-(n+1)) * b^(n+1)) + ∑ j in range (n+1), choose (n+1) j * a^((n+1)-j) * b^j : by rw [one_mul (a^((n+1)-(n+1)))]
+            ... = (choose (n+1) (n+1) * a^((n+1)-(n+1)) * b^(n+1)) + ∑ j in range (n+1), choose (n+1) j * a^((n+1)-j) * b^j : by rw [choose_self (n+1)]
+            ... = ∑ j in range (n+1+1), choose (n+1) j * a^((n+1)-j) * b^j : by refine (eq.symm $ finset.sum_range_succ _ _)
+        ),
+        rw [left, ih, <-right]
+    }
+
+end part_d
 
 end problem_03
