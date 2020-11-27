@@ -1,7 +1,9 @@
+import algebra.big_operators.basic
+import data.finset.basic
 import data.nat.choose.basic
 import data.rat.basic
+import tactic.linarith
 import tactic.norm_num
-import algebra.big_operators.basic
 
 namespace problem_03
 
@@ -126,7 +128,7 @@ def part_b : ∀ (n k : ℕ), k ≤ n → ∃ (c : ℕ), choose n k = ↑c
 )
 | (n+1) (k+1) kLeN := by {
     have kLeNPred : k ≤ n, from nat.succ_le_succ_iff.mp kLeN,
-    have ih : ∃ (c : ℕ), choose n k = ↑c, from part_b n k kLeNPred,
+    obtain ⟨ihC, _⟩ : ∃ (c : ℕ), choose n k = ↑c, from part_b n k kLeNPred,
     rcases (eq_or_lt_of_le kLeN) with kEqN | kLtN,
     {
         have : (1:rat) = ↑1, from rfl,
@@ -134,15 +136,102 @@ def part_b : ∀ (n k : ℕ), k ≤ n → ∃ (c : ℕ), choose n k = ↑c
         exact ⟨1, by cc⟩
     },
     have kLeN : (k+1) ≤ n, from nat.lt_succ_iff.mp kLtN,
-    have ih2 : ∃ (c : ℕ), choose n (k+1) = ↑c, from part_b n (k+1) kLeN,
-    rcases ⟨ih, ih2⟩ with ⟨⟨ihC, _⟩, ⟨ih2C, _⟩⟩,
+    obtain ⟨ih2C, _⟩ : ∃ (c : ℕ), choose n (k+1) = ↑c, from part_b n (k+1) kLeN,
     existsi (ihC + ih2C),
     have : choose (n+1) (k+1) = choose n k + choose n (k+1), from part_a n k (show k < n, from nat.succ_le_iff.mp kLeN),
     have : (↑ihC:rat) + ih2C =  ↑(ihC + ih2C), by norm_cast,
     cc
 }
 
-def part_c : ∀ (s : finset ℕ) (k : ℕ), ↑(finset.card { s' ∈ s.powerset | finset.card s' = k }) = choose (finset.card s) k := sorry
+namespace part_c
+
+-- The number of sublits of length k in a list of natural numbers.
+def len_sublists_count : list ℕ → ℕ → ℕ
+| _ 0 := 1 -- the empty list
+| [] n := 0
+| (hd::tl) (n+1) := (
+    -- the sum of the lists including hd
+    len_sublists_count tl n +
+    -- plus the sum of the lists in tl not including hd
+    len_sublists_count tl (n+1)
+)
+
+
+example : len_sublists_count [] 0 = 1 := rfl
+example : len_sublists_count [] 1 = 0 := rfl
+example : len_sublists_count [1] 0 = 1 := rfl
+example : len_sublists_count [1] 1 = 1 := rfl
+example : len_sublists_count [1] 2 = 0 := rfl
+example : len_sublists_count [1, 2] 1 = 2 := rfl
+example : len_sublists_count [1, 2] 2 = 1 := rfl
+example : len_sublists_count [1, 2, 3] 2 = 3 := rfl
+example : len_sublists_count [3, 2, 1] 3 = 1 := rfl
+example : len_sublists_count [1, 2, 3, 4] 3 = 4 := rfl
+
+def len_sublists_count_gt_length : ∀ (l : list ℕ) k, k > l.length → len_sublists_count l k = 0
+| [] (k+1) kGt := rfl
+| (hd::tl) (k+1) kGt := (
+    have (hd::tl).length = tl.length + 1, from list.length_cons hd tl,
+    have h1 : k > tl.length, by linarith,
+    have ih : len_sublists_count tl k = 0, from len_sublists_count_gt_length tl k h1,
+    have ih2 : len_sublists_count tl (k+1) = 0, from len_sublists_count_gt_length tl (k+1) (nat.lt.step h1),
+    calc
+    len_sublists_count (hd :: tl) (k + 1) = len_sublists_count tl k + len_sublists_count tl (k+1) : rfl
+    ... = 0 : by rw [ih, ih2, add_zero]
+)
+
+def len_sublists_count_self : ∀ l, len_sublists_count l l.length = 1
+| [] := rfl
+| (hd::tl) := (
+    have ih : len_sublists_count tl tl.length = 1, from len_sublists_count_self tl,
+    have h2 : (hd::tl).length = tl.length + 1, from list.length_cons hd tl,
+    have h4 : (hd::tl).length > tl.length, by linarith,
+    calc
+    len_sublists_count (hd :: tl) (hd :: tl).length = len_sublists_count (hd :: tl) (tl.length + 1) : by rw [h2]
+    ... = len_sublists_count tl tl.length + len_sublists_count tl (hd::tl).length : rfl
+    ... = 1 + len_sublists_count tl (hd::tl).length : by rw [ih]
+    ... = 1 : by rw [len_sublists_count_gt_length tl (hd::tl).length h4]
+)
+
+def part_c : ∀ (lst : list ℕ) (k : ℕ), k < lst.length → ↑(len_sublists_count lst k) = choose lst.length k
+| [] 0 hLen := (
+    have left : len_sublists_count [] 0 = 1, from rfl,
+    have right : choose list.nil.length 0 = 1, from rfl,
+    by rw_mod_cast [left, right]
+)
+| (hd::tl) 0 HLen := (
+    have left : len_sublists_count (hd::tl) 0 = 1, from rfl,
+    have right : choose (hd::tl).length 0 = 1, from choose_n_zero (hd :: tl).length,
+    by rw_mod_cast [left, right]
+)
+| (hd::tl) (k+1) hLen := by {
+    have : k+1 < (hd::tl).length, by exact hLen,
+    have hLen' : k < (hd::tl).length, from buffer.lt_aux_1 hLen,
+    have hConsLen : (hd::tl).length = tl.length + 1, from list.length_cons hd tl,
+    have hLen'' : k < tl.length, by { rw [hConsLen] at hLen, exact (add_lt_add_iff_right 1).mp hLen},
+    have ih : ↑(len_sublists_count (hd::tl) k) = choose (hd::tl).length k, from part_c (hd::tl) k hLen',
+    have ih2 : ↑(len_sublists_count tl k) = choose tl.length k, by refine part_c tl k hLen'',
+    have : (k+1) ≤ tl.length, from nat.succ_le_iff.mpr hLen'',
+    have ih3 : ↑(len_sublists_count tl (k+1)) = choose tl.length (k+1), by {
+        rcases (eq_or_lt_of_le this) with kEq | kLt,
+        {
+            calc
+            ↑(len_sublists_count tl (k+1)) = ↑1 : by rw [kEq, len_sublists_count_self]
+            ... = choose tl.length (k+1) : by rw_mod_cast [<-choose_self (k+1), kEq]
+        },
+        exact part_c tl (k+1) kLt
+    },
+    calc
+    (↑(len_sublists_count (hd :: tl) (k + 1)):rat) = ↑(len_sublists_count tl k + len_sublists_count tl (k+1)) : rfl
+    ... = ↑(len_sublists_count tl k) + ↑(len_sublists_count tl (k+1)) : by push_cast
+    ... = choose tl.length k + ↑(len_sublists_count tl (k+1)) : by rw [ih2]
+    ... = choose tl.length k + choose tl.length (k+1) : by rw [ih3]
+    ... = choose (tl.length + 1) (k+1) : by rw [part_a (tl.length) k hLen'']
+    ... = choose (hd::tl).length (k+1) : by rw [hConsLen]
+}
+
+end part_c
+
 
 section part_d
 
