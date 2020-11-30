@@ -63,7 +63,7 @@ section part_d
             -- - Doing the multiplication and extracting the last term at the
             --   other end, so we have two terms and two sums.
             ... = (∑ j in range n, choose n (j+1) * a^((n+1)-(j+1)) * b^(j+1) + a^(n+1)) + (b^(n+1) + ∑ j in range n, choose n j * a^((n+1)-(j+1)) * b^(j+1)) : by rw [hAs, hBs]
-            ... = (∑ j in range n, choose n (j+1) * a^((n+1)-(j+1)) * b^(j+1)) + (∑ j in range n, choose n j * a^((n+1)-(j+1)) * b^(j+1)) + a^(n+1) + b^(n+1) : by rw [add_assoc _ (a^_) _, <-add_assoc (a^_), add_comm (a^_), add_comm (b^_ + _), <-add_assoc _ _ (b^_ + _), add_comm (b^_), <-add_assoc _ _ (b^_)]
+            ... = (∑ j in range n, choose n (j+1) * a^((n+1)-(j+1)) * b^(j+1)) + (∑ j in range n, choose n j * a^((n+1)-(j+1)) * b^(j+1)) + a^(n+1) + b^(n+1) : by abel
             ... = ∑ j in range n, (choose n (j+1) * a^((n+1)-(j+1)) * b^(j+1) + choose n j * a^((n+1)-(j+1)) * b^(j+1)) + a^(n+1) + b^(n+1) : by rw [<-finset.sum_add_distrib]
             ... = (∑ j in range n, (choose (n+1) (j+1) * a^((n+1)-(j+1)) * b^(j+1))) + a^(n+1) + b^(n+1) : congr_arg2 has_add.add (congr_fun (congr_arg has_add.add (helper4 n)) (a ^ (n + 1))) rfl
             ... = (∑ j in range (n+1), (choose (n+1) j * a^((n+1)-j) * b^j)) + b^(n+1) : by rw [helper2, finset.sum_range_succ' (λ j, choose (n+1) j * a^((n+1)-j) * b^j) n]
