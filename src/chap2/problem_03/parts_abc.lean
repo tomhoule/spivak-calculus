@@ -60,7 +60,7 @@ example : ∀ (a b c : ℚ), 0 ≠ a → 0 ≠ b → 0 ≠ c → (a * b) / (a * 
     exact mul_div_mul_left b c (ne.symm aNonzero)
 }
 
-def part_a : ∀ n k, k < n → choose (n+1) (k+1) = choose n k + choose n (k+1) :=
+theorem part_a : ∀ n k, k < n → choose (n+1) (k+1) = choose n k + choose n (k+1) :=
 begin
     intros n k kLtN,
     have kLtNRat : (k:rat) < n, by exact_mod_cast kLtN,
@@ -98,8 +98,7 @@ begin
     ... = ↑(((n+1)-(k+1) + (k+1)) * factorial n) / (factorial (k+1) * factorial ((n+1)-(k+1))) : by rw [h2]
     ... = (((n+1)-(k+1) + (k+1)) * factorial n) / (factorial (k+1) * factorial ((n+1)-(k+1))) : by norm_cast
     ... = (((n+1)-(k+1)) * factorial n) / _ + ((k+1) * factorial n) / (factorial (k+1) * factorial ((n+1)-(k+1))) : by rw [right_distrib, div_add_div_same]
-    ... = choose n (k+1) + choose n k : by rw [h3, h4]
-    ... = choose n k + choose n (k+1) : by rw add_comm
+    ... = choose n k + choose n (k+1) : by rw [h3, h4, add_comm]
 end
 
 def choose_n_zero : ∀ n, choose n 0 = 1 :=
@@ -112,7 +111,7 @@ calc
     ... = 1 : by rw [one_mul, div_self this]
 
 
-def part_b : ∀ (n k : ℕ), k ≤ n → ∃ (c : ℕ), choose n k = ↑c
+theorem part_b : ∀ (n k : ℕ), k ≤ n → ∃ (c : ℕ), choose n k = ↑c
 | 0 0 kLeN := ⟨1, rfl⟩
 | n 0 kLeN := (
     have (1:rat) = ↑1, from rfl,
@@ -193,7 +192,7 @@ def len_sublists_count_self : ∀ l, len_sublists_count l l.length = 1
     ... = 1 : by rw [len_sublists_count_gt_length tl (hd::tl).length h4]
 )
 
-def part_c : ∀ (lst : list ℕ) (k : ℕ), k < lst.length → ↑(len_sublists_count lst k) = choose lst.length k
+theorem part_c : ∀ (lst : list ℕ) (k : ℕ), k < lst.length → ↑(len_sublists_count lst k) = choose lst.length k
 | [] 0 hLen := (
     have left : len_sublists_count [] 0 = 1, from rfl,
     have right : choose list.nil.length 0 = 1, from rfl,

@@ -1,6 +1,7 @@
 import algebra.big_operators.basic
 import data.nat.choose.basic
-
+import data.nat.parity
+import tactic.linarith
 
 open_locale big_operators
 open finset (range)
@@ -8,7 +9,7 @@ open nat (choose)
 
 
 -- (i)
-def part_i : ∀ n, ∑ j in range (n+1), choose n j = 2^n
+theorem part_i : ∀ n, ∑ j in range (n+1), choose n j = 2^n
 | 0 := rfl
 | (n+1) := (
     have ih : ∑ j in range (n+1), choose n j = 2^n, from part_i n,
@@ -33,10 +34,36 @@ def part_i : ∀ n, ∑ j in range (n+1), choose n j = 2^n
 )
 
 -- (ii)
-def part_ii : ∀ n, 0 < n → ∑ j in range (n+1), (-1 : ℚ)^j * choose n j = 0
+theorem part_ii : ∀ n, 0 < n → ∑ j in range (n+1), (-1 : ℚ)^j * choose n j = 0
 | 0 nPos := absurd rfl (ne_of_lt nPos)
 | 1 nPos := rfl
-| (n+2) (nPos : 0 < (n+2)) := (
-    have ih : ∑ j in range (n+1+1), (-1 : ℚ)^j * choose (n+1) j = 0, from part_ii (n + 1) (nat.succ_pos n),
+| (n+2) (nPos : 0 < (n+2)) := by {
+    have ih : ∑ j in range (n+2), (-1 : ℚ)^j * choose (n+1) j = 0 := part_ii (n+1) (nat.succ_pos n),
+    -- First use the induction on choose to get two sums.
+    rw [finset.sum_range_succ'],
+    conv { to_lhs, congr, congr, skip, funext, rw [nat.choose_succ_succ], norm_num, rw [mul_add] },
+    rw [finset.sum_add_distrib, add_assoc, nat.choose],
+    -- Now reduce the two sums to the predecessor (the left side of the
+    -- inductive hypothesis).
+    conv { to_lhs, congr, skip, congr, skip, rw [(show 1 = choose (n+1) 0, by simp)] },
+    rw [<-finset.sum_range_succ' (λ j, (-1 : ℚ)^j * choose (n+1) j) (n+2)],
+    conv { to_lhs, congr, { congr, skip, funext, rw [pow_succ, mul_assoc] } },
+    -- . Eliminate the left term
+    rw [finset.sum_hom, ih, mul_zero, zero_add],
+    -- . Eliminate the right term
+    rw [finset.sum_range_succ, ih], simp only [add_zero, nat.cast_zero, nat.choose_succ_self, mul_zero]
+}
+
+-- (iii)
+theorem part_iii : ∀ n, 0 < n → ∑ l in (range (n+1)).filter odd, choose n l = 2^(n-1)
+| 0 nPos := false.elim $ absurd (show 0 = 0, from rfl) (ne_of_lt nPos)
+| 1 nPos := rfl
+| (n+2) (nPos : 0 < n+2) := by {
+    norm_num,
+    have ih : ∑ l in (range (n+2)).filter odd, choose (n+1) l = 2^n, by { apply part_iii (n+1) (nat.succ_pos n) },
+
     sorry
-)
+}
+
+--- (iv)
+theorem part_iv : ∀ n, ∑ l in (range (n+1)).filter even, choose n l = 2^(n-1) := sorry

@@ -9,11 +9,11 @@ section part_d
 
     variables { a b : ℚ }
 
-    def helper1 : ∀ n j (hJ : j < n), (choose n (j+1) * a^((n+1)-(j+1)) * b^(j+1) + choose n j * a^((n+1)-(j+1)) * b^(j+1) = choose (n+1) (j+1) * a^((n+1)-(j+1)) * b^(j+1)) := λ n j hJ, by rw [mul_assoc (choose n _), mul_assoc, <-add_mul (choose n (j+1)), add_comm, part_a n j hJ, <-mul_assoc]
-    def helper3 : ∀ n, b^(n+1) = choose (n+1) (n+1) * a^(n+1-(n+1)) * b^(n+1) := λ n, by { symmetry, rw [choose_self, one_mul, nat.sub_self (n+1), pow_zero a, one_mul] }
-    def helper4 : ∀ n, ∑ j in range n, (choose n (j+1) * a^((n+1)-(j+1)) * b^(j+1) + choose n j * a^((n+1)-(j+1)) * b^(j+1)) = (∑ j in range n, (choose (n+1) (j+1) * a^((n+1)-(j+1)) * b^(j+1))) := λ n, finset.sum_congr (show range n = range n, from rfl) (λ j hJ, helper1 n j (finset.mem_range.mp hJ))
+    lemma helper1 : ∀ n j (hJ : j < n), (choose n (j+1) * a^((n+1)-(j+1)) * b^(j+1) + choose n j * a^((n+1)-(j+1)) * b^(j+1) = choose (n+1) (j+1) * a^((n+1)-(j+1)) * b^(j+1)) := λ n j hJ, by rw [mul_assoc (choose n _), mul_assoc, <-add_mul (choose n (j+1)), add_comm, part_a n j hJ, <-mul_assoc]
+    lemma helper3 : ∀ n, b^(n+1) = choose (n+1) (n+1) * a^(n+1-(n+1)) * b^(n+1) := λ n, by { symmetry, rw [choose_self, one_mul, nat.sub_self (n+1), pow_zero a, one_mul] }
+    lemma helper4 : ∀ n, ∑ j in range n, (choose n (j+1) * a^((n+1)-(j+1)) * b^(j+1) + choose n j * a^((n+1)-(j+1)) * b^(j+1)) = (∑ j in range n, (choose (n+1) (j+1) * a^((n+1)-(j+1)) * b^(j+1))) := λ n, finset.sum_congr (show range n = range n, from rfl) (λ j hJ, helper1 n j (finset.mem_range.mp hJ))
 
-    def binomial_theorem : ∀ (n : ℕ), (a + b)^n = ∑ j in range (n+1), choose n j * a^(n-j) * b^j
+    theorem binomial_theorem : ∀ (n : ℕ), (a + b)^n = ∑ j in range (n+1), choose n j * a^(n-j) * b^j
     | 0 := (
         let n := 0 in
         have left : (a + b)^n = 1, from pow_zero (a + b),

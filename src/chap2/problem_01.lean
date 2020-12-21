@@ -7,8 +7,6 @@ open finset (range)
 open_locale big_operators
 
 -- (i)
-def part_i_aux : ∀ (n : ℕ), 6*((n+1)^2) + (n*(n+1)*(2*n+1)) = (n+1)*(n+2)*(2*(n+1)+1) := λ n, by ring
-
 def part_i : ∀ (n : ℕ), ↑(∑ i in range (n+1), i^2) = ((↑n:ℚ)*(n+1)*(2*n + 1))/6
 | 0 := (
     let n := 0 in
@@ -30,8 +28,7 @@ def part_i : ∀ (n : ℕ), ↑(∑ i in range (n+1), i^2) = ((↑n:ℚ)*(n+1)*(
     (↑(∑ (i:ℕ) in range (n+1+1), i^2):ℚ) = (n'+1)^2 + (∑ (i:ℕ) in range (n+1), i^2) : by rw [sum]
     ... = (n'+1)^2 + ↑(∑ i in range (n+1), i^2) : by push_cast
     ... = (n'+1)^2 + (n'*(n+1)*(2*n+1))/6 : by rw [ih]
-    ... = (6*(n+1)^2 + n*(n+1)*(2*n+1))/6 : by ring
-    ... = ((n+1)*(n+1+1)*(2*(n+1)+1))/6 : by rw_mod_cast part_i_aux
+    ... = ((n+1)*(n+1+1)*(2*(n+1)+1))/6 : by ring
 }
 
 -- (ii)
