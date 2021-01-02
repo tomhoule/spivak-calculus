@@ -1,12 +1,10 @@
 import algebra.big_operators.basic
 import data.nat.choose.basic
 import data.nat.parity
-import tactic.linarith
 
 open_locale big_operators
 open finset (range)
 open nat (choose)
-
 
 -- (i)
 theorem part_i : ∀ n, ∑ j in range (n+1), choose n j = 2^n
@@ -41,13 +39,14 @@ theorem part_ii : ∀ n, 0 < n → ∑ j in range (n+1), (-1 : ℚ)^j * choose n
     have ih : ∑ j in range (n+2), (-1 : ℚ)^j * choose (n+1) j = 0 := part_ii (n+1) (nat.succ_pos n),
     -- First use the induction on choose to get two sums.
     rw [finset.sum_range_succ'],
-    conv { to_lhs, congr, congr, skip, funext, rw [nat.choose_succ_succ], norm_num, rw [mul_add] },
+    conv_lhs { congr, congr, skip, funext, rw [nat.choose_succ_succ], norm_num, rw [mul_add] },
     rw [finset.sum_add_distrib, add_assoc, nat.choose],
+
     -- Now reduce the two sums to the predecessor (the left side of the
     -- inductive hypothesis).
-    conv { to_lhs, congr, skip, congr, skip, rw [(show 1 = choose (n+1) 0, by simp)] },
+    conv { to_lhs, congr, skip, congr, skip, rw [(show 1 = choose (n+1) 0, by refl)] },
     rw [<-finset.sum_range_succ' (λ j, (-1 : ℚ)^j * choose (n+1) j) (n+2)],
-    conv { to_lhs, congr, { congr, skip, funext, rw [pow_succ, mul_assoc] } },
+    conv_lhs { congr, { congr, skip, funext, rw [pow_succ, mul_assoc] } },
     -- . Eliminate the left term
     rw [finset.sum_hom, ih, mul_zero, zero_add],
     -- . Eliminate the right term
@@ -55,15 +54,139 @@ theorem part_ii : ∀ n, 0 < n → ∑ j in range (n+1), (-1 : ℚ)^j * choose n
 }
 
 -- (iii)
-theorem part_iii : ∀ n, 0 < n → ∑ l in (range (n+1)).filter odd, choose n l = 2^(n-1)
+
+lemma sum_choose_succ_succ { n : ℕ } { s : finset ℕ } : ∑ i in s, choose (n+1) (i+1) = ∑ i in s, choose n i + ∑ i in s, choose n i.succ := by
+{ conv_lhs { congr, skip, funext, rw nat.choose_succ_succ }, rw <-finset.sum_add_distrib }
+
+def oddRange : ℕ → finset ℕ := λ n, (range n).filter odd
+def evenRange : ℕ → finset ℕ := λ n, (range n).filter even
+
+@[simp] def sumEvenRangeSucc' : ∀ n (f : ℕ → ℕ), ∑ i in evenRange (n+1), f i = (∑ i in oddRange n, f (i+1)) + f 0 := by {
+    intros n f,
+    unfold evenRange oddRange,
+    rw [finset.sum_filter, finset.sum_range_succ', <-finset.sum_filter],
+    simp only [nat.even_zero, if_true, add_left_inj],
+    have : odd = (λ x, even (x+1)) := funext (λ x, by simp only [nat.even_succ, nat.odd_iff_not_even]),
+    conv_rhs { congr, congr, rw this },
+    simp only [finset.filter_congr_decidable]
+}
+
+@[simp] def sumOddRangeSucc' : ∀ n (f : ℕ → ℕ), ∑ i in oddRange (n+1), f i = (∑ i in evenRange n, f (i+1)) := by {
+    intros n f,
+    unfold evenRange oddRange,
+    rw [finset.sum_filter, finset.sum_range_succ', <-finset.sum_filter],
+    simp only [nat.odd_iff_not_even, not_true, nat.even_zero, if_false, add_left_inj, add_zero],
+    have : even = (λ x, ¬even (x+1)) := funext (λ x, by simp only [nat.even_succ, not_not]),
+    conv_rhs { congr, congr, rw this },
+    simp only [finset.filter_congr_decidable]
+}
+
+@[simp] def sumOddRangeSuccOFOdd : ∀ n (f : ℕ → ℕ), odd n → ∑ i in oddRange (n+1), f i = f n + (∑ i in oddRange n, f i) := by {
+    intros n f nOdd,
+    unfold evenRange oddRange,
+    rw [finset.sum_filter, finset.sum_range_succ, <-finset.sum_filter],
+    simp only [if_true, nat.odd_iff_not_even, add_right_inj, finset.filter_congr_decidable, nOdd],
+    have : odd = (λ x, ¬even x) := funext (λ x, by rw nat.odd_iff_not_even),
+    conv_lhs { congr, congr, rw <-this },
+    simp only [finset.filter_congr_decidable]
+}
+
+@[simp] def sumOddRangeSucc : ∀ n (f : ℕ → ℕ), ∑ i in oddRange (n+1), f i = ite (odd n) (f n) 0 + (∑ i in oddRange n, f i) := by {
+    intros n f,
+    unfold evenRange oddRange,
+    rw [finset.sum_filter, finset.sum_range_succ, <-finset.sum_filter],
+}
+
+@[simp] def sumEvenRangeSucc : ∀ n (f : ℕ → ℕ), ∑ i in evenRange (n+1), f i = ite (even n) (f n) 0 + (∑ i in evenRange n, f i) := by {
+    intros n f,
+    unfold evenRange oddRange,
+    rw [finset.sum_filter, finset.sum_range_succ, <-finset.sum_filter],
+}
+
+
+
+def ef : ℕ → ℕ := λ n, ∑ (x : ℕ) in oddRange (n+2), choose (n+1) x
+def ef' : ℕ → ℕ := λ n, ∑ (x : ℕ) in evenRange (n+2), choose (n+1) x
+
+example : ef 0 = ef' 0 := rfl
+example : ef 1 = ef' 1 := rfl
+example : ef 2 = ef' 2 := rfl
+example : ef 3 = ef' 3 := rfl
+example : ef 4 = ef' 4 := rfl
+example : ef 5 = ef' 5 := rfl
+example : ef 6 = ef' 6 := rfl
+
+
+lemma part_iii_helper : ∀ n, ef n = ef' n
+| 0 := rfl
+| (n+1) := by {
+    have ih : ef n = ef' n := part_iii_helper n,
+    delta ef ef',
+    delta ef ef' at ih,
+    rw [sumEvenRangeSucc', sum_choose_succ_succ, sumOddRangeSucc', sum_choose_succ_succ],
+    nth_rewrite_rhs 0 ih,
+    nth_rewrite_rhs 0 add_assoc,
+    rw [add_right_inj, <-sumOddRangeSucc'],
+    nth_rewrite_rhs 0 <-sumEvenRangeSucc',
+
+    rw [sumEvenRangeSucc, sumOddRangeSucc, ih, add_left_inj],
+    rw [nat.choose_succ_self],
+    simp only [if_t_t]
+}
+
+theorem part_iii : ∀ (n : ℕ), 0 < n → ∑ l in (range (n+1)).filter odd, (choose n l) = 2^(n-1)
 | 0 nPos := false.elim $ absurd (show 0 = 0, from rfl) (ne_of_lt nPos)
 | 1 nPos := rfl
 | (n+2) (nPos : 0 < n+2) := by {
+    have zeroNotOdd : ¬odd 0, by simp only [not_true, nat.odd_iff_not_even, not_false_iff, nat.even_zero],
+    have ih : (∑ l in (range (n+2)), (if (odd l) then (choose (n+1) l) else 0)) = 2^n := by { rw [<-finset.sum_filter], apply part_iii (n+1) (nat.succ_pos n) },
     norm_num,
-    have ih : ∑ l in (range (n+2)).filter odd, choose (n+1) l = 2^n, by { apply part_iii (n+1) (nat.succ_pos n) },
+    rw [finset.sum_filter, pow_succ],
+    conv_lhs { rw [finset.sum_range_succ'], congr, congr, skip, funext, rw [nat.choose_succ_succ, <-add_zero 0] },
+    push_cast,
+    conv_lhs { congr, congr, skip, funext, rw <-apply_ite2 (has_add.add) },
+    rw finset.sum_add_distrib,
+    rw [<-ih, two_mul],
+    simp only [zeroNotOdd, if_false, add_zero],
+    -- Eliminate the left branch
+    conv_rhs { congr, rw finset.sum_range_succ' },
+    conv_lhs { rw add_comm, congr, rw [finset.sum_range_succ, add_comm] },
+    simp only [zeroNotOdd, if_false, add_zero],
+    nth_rewrite_lhs 0 add_assoc,
+    rw [add_right_inj],
+    -- Eliminate the rest
+    conv_lhs { congr, rw nat.choose_succ_self },
+    simp only [if_t_t, int.coe_nat_zero, nat.odd_iff_not_even, zero_add, ite_not],
 
-    sorry
-}
+    have dat : _ := part_iii_helper n,
+    delta ef ef' oddRange evenRange at dat,
+    rw [<-finset.sum_filter, <-finset.sum_filter],
+    symmetry,
+    have : odd = (λ x, ¬even x) := funext (λ x, by rw nat.odd_iff_not_even),
+    conv_lhs { congr, congr, rw <-this },
+    have : even = (λ x, ¬even (x+1)) := funext (λ x, by simp only [nat.even_succ, not_not]),
+    conv_rhs { congr, congr, rw <-this },
+
+    simp only [dat, finset.filter_congr_decidable]
+ }
 
 --- (iv)
-theorem part_iv : ∀ n, ∑ l in (range (n+1)).filter even, choose n l = 2^(n-1) := sorry
+theorem part_iv : ∀ n, ∑ l in evenRange (n+1), choose n l = 2^(n-1)
+| 0 := rfl
+| 1 := rfl
+| (n+2) := by {
+    have ih : ∑ l in evenRange (n+2), choose (n+1) l = 2^n := by { apply part_iv (n+1) },
+    conv_rhs { norm_num, rw [pow_succ, <-ih, two_mul] },
+    rw [sumEvenRangeSucc', sum_choose_succ_succ],
+
+    conv_lhs { congr, congr, skip, rw [sumOddRangeSucc, nat.choose_succ_self], congr, simp },
+    nth_rewrite_rhs 0 sumEvenRangeSucc',
+
+    conv_lhs { rw [add_comm, nat.choose_zero_right, zero_add] },
+    conv_rhs { rw [add_assoc, add_comm, nat.choose_zero_right, add_assoc] },
+    rw [add_right_inj, add_left_inj],
+
+    have : _ := part_iii_helper n,
+    delta ef ef' at this,
+    exact this
+}
