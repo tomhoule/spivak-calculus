@@ -116,7 +116,6 @@ example : ef 4 = ef' 4 := rfl
 example : ef 5 = ef' 5 := rfl
 example : ef 6 = ef' 6 := rfl
 
-
 lemma part_iii_helper : ∀ n, ef n = ef' n
 | 0 := rfl
 | (n+1) := by {
@@ -134,40 +133,24 @@ lemma part_iii_helper : ∀ n, ef n = ef' n
     simp only [if_t_t]
 }
 
-theorem part_iii : ∀ (n : ℕ), 0 < n → ∑ l in (range (n+1)).filter odd, (choose n l) = 2^(n-1)
+theorem part_iii : ∀ (n : ℕ), 0 < n → ∑ l in oddRange (n+1), choose n l = 2^(n-1)
 | 0 nPos := false.elim $ absurd (show 0 = 0, from rfl) (ne_of_lt nPos)
 | 1 nPos := rfl
 | (n+2) (nPos : 0 < n+2) := by {
     have zeroNotOdd : ¬odd 0, by simp only [not_true, nat.odd_iff_not_even, not_false_iff, nat.even_zero],
-    have ih : (∑ l in (range (n+2)), (if (odd l) then (choose (n+1) l) else 0)) = 2^n := by { rw [<-finset.sum_filter], apply part_iii (n+1) (nat.succ_pos n) },
-    norm_num,
-    rw [finset.sum_filter, pow_succ],
-    conv_lhs { rw [finset.sum_range_succ'], congr, congr, skip, funext, rw [nat.choose_succ_succ, <-add_zero 0] },
-    push_cast,
-    conv_lhs { congr, congr, skip, funext, rw <-apply_ite2 (has_add.add) },
-    rw finset.sum_add_distrib,
-    rw [<-ih, two_mul],
-    simp only [zeroNotOdd, if_false, add_zero],
-    -- Eliminate the left branch
-    conv_rhs { congr, rw finset.sum_range_succ' },
-    conv_lhs { rw add_comm, congr, rw [finset.sum_range_succ, add_comm] },
-    simp only [zeroNotOdd, if_false, add_zero],
-    nth_rewrite_lhs 0 add_assoc,
-    rw [add_right_inj],
+    have ih : (∑ l in oddRange (n+2), choose (n+1) l) = 2^n := by { apply part_iii (n+1) (nat.succ_pos n) },
+    have parityIrrelevance : ∑ i in oddRange (n+2), choose (n+1) i = ∑ i in evenRange (n+2), choose (n+1) i := part_iii_helper n,
+
+    conv_lhs { rw [sumOddRangeSucc', sum_choose_succ_succ] },
+
+    conv_rhs { norm_num, rw [pow_succ, <-ih, two_mul] },
+
+    -- Eliminate the left terms
+    rw [parityIrrelevance, add_right_inj],
+
     -- Eliminate the rest
-    conv_lhs { congr, rw nat.choose_succ_self },
-    simp only [if_t_t, int.coe_nat_zero, nat.odd_iff_not_even, zero_add, ite_not],
-
-    have dat : _ := part_iii_helper n,
-    delta ef ef' oddRange evenRange at dat,
-    rw [<-finset.sum_filter, <-finset.sum_filter],
-    symmetry,
-    have : odd = (λ x, ¬even x) := funext (λ x, by rw nat.odd_iff_not_even),
-    conv_lhs { congr, congr, rw <-this },
-    have : even = (λ x, ¬even (x+1)) := funext (λ x, by simp only [nat.even_succ, not_not]),
-    conv_rhs { congr, congr, rw <-this },
-
-    simp only [dat, finset.filter_congr_decidable]
+    conv_lhs { rw [sumEvenRangeSucc, nat.choose_succ_self], congr, simp },
+    rw [<-parityIrrelevance, sumOddRangeSucc', zero_add]
  }
 
 --- (iv)
@@ -176,7 +159,10 @@ theorem part_iv : ∀ n, ∑ l in evenRange (n+1), choose n l = 2^(n-1)
 | 1 := rfl
 | (n+2) := by {
     have ih : ∑ l in evenRange (n+2), choose (n+1) l = 2^n := by { apply part_iv (n+1) },
+    have parityIrrelevance : ∑ i in oddRange (n+2), choose (n+1) i = ∑ i in evenRange (n+2), choose (n+1) i := part_iii_helper n,
+
     conv_rhs { norm_num, rw [pow_succ, <-ih, two_mul] },
+
     rw [sumEvenRangeSucc', sum_choose_succ_succ],
 
     conv_lhs { congr, congr, skip, rw [sumOddRangeSucc, nat.choose_succ_self], congr, simp },
@@ -186,7 +172,5 @@ theorem part_iv : ∀ n, ∑ l in evenRange (n+1), choose n l = 2^(n-1)
     conv_rhs { rw [add_assoc, add_comm, nat.choose_zero_right, add_assoc] },
     rw [add_right_inj, add_left_inj],
 
-    have : _ := part_iii_helper n,
-    delta ef ef' at this,
-    exact this
+    exact parityIrrelevance
 }
