@@ -59,7 +59,7 @@ section part_d
             (a+b) * ∑ j in range (n+1), choose n j * a^(n-j) * b^j = a * ∑ j in range (n+1), choose n j * a^(n-j) * b^j + b * ∑ j in range (n+1), choose n j * a^(n-j) * b^j : right_distrib a b _
             -- Telescope the two sums by distributing the multiplication, then:
             -- - Noticing that f 0 in the final sequence is a^(n+1)-j (the
-            --   choose factor may be a problen)
+            --   choose factor may be a problem)
             -- - Doing the multiplication and extracting the last term at the
             --   other end, so we have two terms and two sums.
             ... = (∑ j in range n, choose n (j+1) * a^((n+1)-(j+1)) * b^(j+1) + a^(n+1)) + (b^(n+1) + ∑ j in range n, choose n j * a^((n+1)-(j+1)) * b^(j+1)) : by rw [hAs, hBs]
