@@ -39,10 +39,10 @@ private lemma fSumMul : ∀ (n x : ℕ), x * ∑ j in range (n+1), f a b n j = �
   apply (symm $ finset.sum_hom _ (λ x', x * x'))
 }
 
-theorem binomial_theorem : ∀ (n : ℕ), (a + b)^n = ∑ j in range (n+1), f a b n j
+private theorem binomial_theorem_impl : ∀ (n : ℕ), (a + b)^n = ∑ j in range (n+1), f a b n j
 | 0 := rfl
 | (n+1) := by {
-  let ih := binomial_theorem n,
+  let ih := binomial_theorem_impl n,
   rw [pow_succ, ih, right_distrib],
   conv_rhs { rw [finset.sum_range_succ', fZero], congr, rw [finset.sum_range_succ, finset.sum_congr (show range n = range n, from rfl) (fNsucc' a b n), add_comm] },
   rw [finset.sum_add_distrib, add_comm (a * _) (b * _), fSumMul a b _ b],
@@ -56,3 +56,6 @@ theorem binomial_theorem : ∀ (n : ℕ), (a + b)^n = ∑ j in range (n+1), f a 
   simp only [add_assoc, add_right_inj, fSelf, fZero, pow_succ],
   ac_refl
 }
+
+theorem binomial_theorem : ∀ (n : ℕ), (a + b)^n = ∑ j in range (n+1), choose n j * a^(n-j) * b^j := by
+{ intros, let out := binomial_theorem_impl a b n, unfold f at out, exact out }
