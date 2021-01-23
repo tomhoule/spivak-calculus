@@ -1,67 +1,83 @@
 import algebra.big_operators.basic
-import data.nat.choose.basic
 import chap2.problem_03.binomial_theorem_golf
+import data.mv_polynomial.basic
+import data.polynomial.basic
+import data.polynomial.eval
+import data.finsupp.pointwise
+import data.finset.nat_antidiagonal
 
 open_locale big_operators
 open finset (range)
 open nat (choose)
+open polynomial (eval coeff monomial)
 
 namespace partA
 
-def f : ℕ → ℕ → ℕ → ℕ → ℕ :=
-λ l m n k, choose n k * choose m (l - k)
 
-lemma fZero : ∀ m n, f 0 m n 0 = 1 := by { intros, unfold f, norm_num }
-
-lemma hint ( x n : ℕ ) : (1 + x)^n = ∑ k in range (n+1), n.choose k * x^k := by {
-  rw [binomial_theorem],
-  conv_lhs { congr, congr, skip, funext, rw [one_pow, mul_one] }
+private lemma vandermonde_identity_aux (m n : ℕ) : choose_polynomial n * choose_polynomial m = choose_polynomial (n+m) := by {
+  rw [<-binomial_theorem' n, <-binomial_theorem' m],
+  rw [<-pow_add, binomial_theorem']
 }
 
-lemma hint' ( x m n : ℕ ) : (1 + x)^n * (1 + x)^m = ∑ k in range (n+m+1), (choose (n+m) k * x^k) := by {
-  rw [<-pow_add, binomial_theorem],
-  conv_lhs { congr, skip, funext, rw [one_pow, mul_one] },
-}
-
-lemma hint'' ( x m n : ℕ ) :
-  (∑ k in range (n+1), (n.choose k * x^k)) * (∑ k in range (m+1), (m.choose k * x^k)) =
-  ∑ k in range (n+m+1), choose (n+m) k * x^k
-:= by { intros, rw [<-hint x m, <-hint x n], exact hint' x m n }
-
-lemma sum_hom_mul ( a n : ℕ ) ( f : ℕ → ℕ ) :
-  a * ∑ i in range n, f i = ∑ i in range n, a * f i := by
-{ intros, rw [finset.sum_hom (range n) (λ x, a * x)] }
-
-lemma formal_power_series_mul ( m n x : ℕ ) ( a b : ℕ → ℕ ):
-  (∑ i in range (m+1), (a i * x^i)) * (∑ j in range (n+1), (b j * x^j)) =
-  ∑ l in range (m+n+1), (∑ k in range (l+1), (f l m n k)) * x^l
-:= by {
+private lemma antidiagonal_sum_rewrite (n : ℕ) (f : ℕ → ℕ → ℕ) : ∑ k in finset.nat.antidiagonal n, f k.fst k.snd = ∑ k in range (n+1), f k (n-k) := by {
+  apply @finset.sum_bij _ _ _ _ _ _ (λ (x:ℕ × ℕ), f x.fst x.snd) (λ x, f x (n-x)) (λ (a:ℕ ×ℕ) ha, a.fst),
+  { intros,
+    simp only [finset.mem_range],
+    rw [finset.nat.mem_antidiagonal] at ha,
+    replace ha := (nat.lt_succ_of_le $ le_of_eq ha),
+    exact buffer.lt_aux_1 ha
+  },
+  { intros,
+    simp only,
+    rw [finset.nat.mem_antidiagonal] at ha,
+    have : n - a.fst = a.snd := norm_num.sub_nat_pos n a.fst a.snd ha,
+    rw this
+  },
+  { intros _ _ _ _ h₁,
+    simp only at h₁,
+    rw [prod.ext_iff],
+    split, exact h₁,
+    rw [finset.nat.mem_antidiagonal] at ha₁ ha₂,
+    replace ha₁ := nat.sub_eq_of_eq_add (eq.symm ha₁),
+    replace ha₂ := nat.sub_eq_of_eq_add (eq.symm ha₂),
+    rw h₁ at ha₁,
+    rw [<-ha₁, <-ha₂]
+  },
   intros,
-  rw sum_hom_mul (∑ i in range (m+1), _),
-  conv_lhs { congr, skip, funext, rw [mul_comm, sum_hom_mul] },
-  conv in (_ * _) { rw [mul_assoc, mul_comm (_^_), mul_assoc, <-mul_assoc (b _), <-pow_add], },
-  sorry
- }
-
-theorem part_a : ∀ (l m n : ℕ), (∑ k in range (l+1), f l m n k) = choose (n+m) l := by {
-  intros,
-  let h := hint' l m n,
-  rw [hint l, hint l, formal_power_series_mul] at h,
-  -- rw [
-  --   finset.sum_congr
-  --     (show range (m+n+1) = range (m+n+1), from rfl)
-  --     (λ x xInRange, _)
-  -- ],
-  -- finset.sum_congr
-  -- mul_left_inj
-  sorry
+  existsi (b, n - b),
+  rw finset.mem_range at H,
+  have : (b, n - b) ∈ finset.nat.antidiagonal n, by {
+    rw finset.nat.mem_antidiagonal,
+    have h2 : b ≤ n := nat.lt_succ_iff.mp H,
+    simp only, exact nat.add_sub_of_le h2
+  },
+  existsi this,
+  simp only
 }
--- | 0 m n := by { rw [finset.sum_range_one, fZero, nat.choose_zero_right] }
--- | (l+1) m n := by {
---   let ih := part_a l m n,
 
---   -- proove that left * x^k = right * x^k (and x^k ≠ 0)
---   sorry
--- }
+
+theorem vandermonde_identity (m n l : ℕ) : ∑ k in range (l+1), (choose n k * choose m (l-k)) = choose (n+m) l := by {
+  rw <-antidiagonal_sum_rewrite l (λ a b, choose n a * choose m b),
+  let h := (polynomial.ext_iff.mp $ vandermonde_identity_aux m n) l,
+  rw [polynomial.coeff_mul _ _ l] at h,
+  simp only [choose_polynomial.coeff_eq] at h,
+  exact h
+}
 
 end partA
+
+namespace partB
+
+theorem b : ∀ n, (∑ k in range (n+1), (choose n k)^2) = choose (2*n) n := by {
+  intro n,
+  let h := partA.vandermonde_identity n n n,
+  rw <-two_mul at h,
+  rw <-h,
+  conv_rhs {
+    apply_congr, skip,
+    rw nat.choose_symm (nat.le_of_lt_succ $ finset.mem_range.mp H),
+    rw <-pow_two,
+  },
+}
+
+end partB

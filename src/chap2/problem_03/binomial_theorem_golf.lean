@@ -1,10 +1,12 @@
 import algebra.big_operators.basic
 import data.nat.choose.basic
-import tactic.zify
+import data.polynomial.default
+import data.polynomial.monomial
 
 open_locale big_operators
 open finset (range)
 open nat (choose)
+open polynomial (C X)
 
 variables ( a b : ℕ )
 
@@ -59,3 +61,48 @@ private theorem binomial_theorem_impl : ∀ (n : ℕ), (a + b)^n = ∑ j in rang
 
 theorem binomial_theorem : ∀ (n : ℕ), (a + b)^n = ∑ j in range (n+1), choose n j * a^(n-j) * b^j := by
 { intros, let out := binomial_theorem_impl a b n, unfold f at out, exact out }
+
+def choose_polynomial (n : ℕ) : polynomial ℕ := {
+  to_fun := n.choose,
+  support := range (n+1),
+  mem_support_to_fun := by {
+    intro k, rw [finset.mem_range], split,
+    { intro hKLtNSucc, exact (ne_of_gt $ nat.choose_pos (nat.lt_succ_iff.mp hKLtNSucc)) },
+    intro hPos, by_contradiction, rw [<-not_le, not_not] at h,
+    refine absurd _ hPos,
+    exact nat.choose_eq_zero_of_lt (nat.succ_le_iff.mp h)
+  }
+}
+
+lemma choose_polynomial.zero_eq_one : choose_polynomial 0 = 1 := by {
+  ext1,
+  unfold choose_polynomial, simp,
+  rcases (em $ n = 0) with nZero | nPos,
+  { rw nZero, simp },
+  obtain ⟨_, h⟩ := nat.exists_eq_succ_of_ne_zero nPos,
+  simp only [h, nat.choose_zero_succ],
+  have : polynomial.coeff 1 n = 0 := by { rw [<-polynomial.C_1, polynomial.coeff_C], simp only [nPos, if_false]},
+  rw [<-h, this]
+}
+
+lemma choose_polynomial.coeff_eq (n : ℕ) : (choose_polynomial n).coeff = choose n := by { refl }
+
+--| Binomial theorem special case for 1+x
+theorem binomial_theorem' : ∀ (n : ℕ), (1+polynomial.X)^n = choose_polynomial n
+| 0 := by { rw pow_zero, rw choose_polynomial.zero_eq_one }
+| (n+1) := by {
+  let ih := binomial_theorem' n,
+  rw [pow_succ, ih, right_distrib, one_mul],
+  rw [polynomial.as_sum_support_C_mul_X_pow (choose_polynomial (n+1))],
+  rw [polynomial.as_sum_support_C_mul_X_pow (choose_polynomial (n))],
+  unfold choose_polynomial, simp only,
+  conv_rhs { rw [finset.sum_range_succ'], congr, congr, skip, funext, simp, rw [nat.choose_succ_succ], simp, rw add_mul },
+  simp only [mul_one, nat.choose_zero_right, polynomial.coeff_mk, pow_zero],
+  conv_rhs { rw [finset.sum_add_distrib, finset.sum_range_succ] },
+  conv_lhs { congr, skip, rw [finset.mul_sum, finset.sum_range_succ], congr, skip, congr, skip, funext, rw [mul_comm, mul_assoc, <-pow_succ'] },
+  conv_lhs { rw [nat.choose_self, <-add_assoc, add_comm (∑ _ in _, _), mul_comm X, mul_assoc _ (X^_) X, <-pow_succ', polynomial.C_1, one_mul],  },
+  rw [finset.sum_range_succ', finset.sum_range_succ],
+  simp only [nat.choose_self, mul_one, nat.choose_zero_right, nat.cast_zero, zero_mul, nat.choose_succ_self, zero_add, nat.cast_one,
+  ring_hom.eq_nat_cast, pow_zero],
+  ring
+}
