@@ -1,10 +1,6 @@
 import algebra.big_operators.basic
 import chap2.problem_03.binomial_theorem_golf
-import data.mv_polynomial.basic
 import data.polynomial.basic
-import data.polynomial.eval
-import data.finsupp.pointwise
-import data.finset.nat_antidiagonal
 
 open_locale big_operators
 open finset (range)
