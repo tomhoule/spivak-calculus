@@ -68,13 +68,6 @@ namespace problem6part1
 
 variables (n: ℕ) (k : ℚ)
 
-lemma sumCubesAux1 : ((n:rat) + 1)^4 - n^4 = 9876 := by {
-  rw [pow_succ (n+1), pow_succ n, nat.succ_mul, add_comm],
-  rw [
-    nat.add_sub_assoc,
-    <-nat.mul_sub_left_distrib n ((n+1)^3) (n^3)
-  ],
-  sorry,
-}
+lemma sumCubesAux1 : (k + 1)^4 - k^4 = (k+1)^3 + 3*k^3 + 3*k^2 + k := by linarith
 
 end problem6part1
