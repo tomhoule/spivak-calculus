@@ -1,6 +1,5 @@
 import algebra.big_operators.basic
 import data.rat.basic
-import tactic.zify
 import tactic.linarith
 
 open_locale big_operators
