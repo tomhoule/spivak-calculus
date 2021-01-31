@@ -1,0 +1,3 @@
+-- TODO: Looking at the referenced problem in chapter 27, this is not something
+-- I would have had the mathematical intuition to solve at the moment, so I will
+-- skip this for now, and return when I have a better understanding.
