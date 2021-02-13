@@ -97,9 +97,9 @@ namespace properties
         a   = a + 0 : by rw [add_zero a]
         ... = a + (-b + b) : by rw [opp_add]
         ... = (a + -b) + b : by rw [add_assoc']
-        ... = (a - b) + b : rfl
+        ... = (a - b) + b : by rw sub_eq_add_neg
         ... = (b - a) + b : by rw h
-        ... = (b + -a) + b : rfl
+        ... = (b + -a) + b : by rw sub_eq_add_neg
         ... = (b + b) + -a : by rw [add_comm', add_assoc]
         ... = 2 * b  + -a : by rw add_self_is_mul_two
     ),
@@ -166,7 +166,7 @@ namespace properties
     λ x,
     calc
     (x^2) - (3*x) + 2   = (x * x) - (3*x) + 2 : by rw [pow_succ, pow_one]
-                    ... = (x * x) + -(3 * x) + 2 : by refl
+                    ... = (x * x) + -(3 * x) + 2 : by rw sub_eq_add_neg
                     ... = (x * x) + (-3 * x) + 2 : by rw [←(neg_mul_distrib α 3 x)]
                     ... = (x * x) + (-(2 + 1) * x) + 2 : by refl
                     ... = (x * x) + ((-2 + -1) * x) + 2 : by rw [neg_add]
@@ -179,15 +179,15 @@ namespace properties
                     ... = (x * x) + ((x * -2) + (((-1) * x) + ((-1) * (-2)))) : by rw [add_assoc' α (x * -2)]
                     ... = (x * x) + ((x * -2) + (-1 * (x + -2))) : by rw mul_distrib'
                     ... = (x * x) + ((x * -2) + -(x + -2)) : by rw [neg_one_mul]
-                    ... = (x * x) + ((x * -2) + -(x - 2)) : by refl
+                    ... = (x * x) + ((x * -2) + -(x - 2)) : by rw sub_eq_add_neg
                     ... = (x * x) + (x * -2) + -(x - 2) : by rw [add_assoc']
                     ... = (x * (x +- 2)) + -(x - 2) : by rw [mul_distrib']
-                    ... = (x * (x - 2)) + -(x - 2) : by refl
+                    ... = (x * (x - 2)) + -(x - 2) : by rw sub_eq_add_neg
                     ... = (x - 2) * x + -(x - 2) : by rw mul_comm'
                     ... = (x - 2) * x + -1 * (x - 2) : by rw [neg_one_mul]
                     ... = (x - 2) * x + (x - 2) * (- 1) : by rw [mul_comm' α (-1)]
                     ... = (x - 2) * (x + -1) : by rw mul_distrib'
-                    ... = (x - 2) * (x - 1) : by refl
+                    ... = (x - 2) * (x - 1) : by rw <-sub_eq_add_neg
                     ... = (x - 1) * (x - 2) : by rw mul_comm'
 
     -- P10
@@ -227,12 +227,10 @@ namespace properties
     have lt : 0 < (c - b) + (b - a), from add_closure α (c - b) (b - a) hcbpos hbapos,
     have (c - b) + (b - a) = c - a, from (
         calc
-        (c - b) + (b - a) = (c + -b) + (b + -a) : rfl
-                      ... = c + (-b + (b + -a)) : by rw [add_assoc]
-                      ... = c + ((-b + b) + -a) : by rw [add_assoc]
+        (c - b) + (b - a) = (c + -b) + (b + -a) : by rw [sub_eq_add_neg, sub_eq_add_neg]
+                      ... = c + ((-b + b) + -a) : by rw [add_assoc, add_assoc]
                       ... = c + (0 + -a) : by rw [opp_add]
-                      ... = c + - a : by rw [zero_add']
-                      ... = c - a : rfl
+                      ... = c - a : by rw [zero_add', sub_eq_add_neg]
     ),
     have 0 < c - a, from eq.subst this lt,
     show a < c, from sub_pos.elim_left this

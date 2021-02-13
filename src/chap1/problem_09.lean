@@ -1,4 +1,4 @@
-import data.real.basic
+import data.real.sqrt
 import tactic.basic
 
 open real (sqrt)
@@ -33,7 +33,7 @@ have 0 ≤ sqrt (2 : ℝ) + sqrt 3 - sqrt 5 + sqrt 7, from (
         have h : 5 < 7, from nat.lt_of_sub_eq_succ rfl,
         have (5 : ℤ) < 7, by exact nat.cast_lt.mpr h,
         have (↑5 : ℝ) < ↑7, from lt_cast_int_to_real 5 7 this,
-        have sqrt ↑5 < sqrt ↑7, from (real.sqrt_lt (le_cast_int_to_real 0 5 five) (le_cast_int_to_real 0 7 seven)).elim_right this,
+        have sqrt ↑5 < sqrt ↑7, from (real.sqrt_lt (le_cast_int_to_real 0 5 five)).elim_right this,
         have 0 < (sqrt ↑7 - sqrt ↑5), from sub_pos.mpr this,
         have 0 < (sqrt ↑7 + -(sqrt ↑5)), from this,
         have 0 < (-(sqrt ↑5) + sqrt ↑7), by rwa [add_comm] at this,
@@ -83,7 +83,7 @@ have right : (sqrt 5 - sqrt 7) < 0, from (
     have h : 5 < 7, from nat.lt_of_sub_eq_succ rfl,
     have (5 : ℤ) < 7, by exact nat.cast_lt.mpr h,
     have (↑5 : ℝ) < ↑7, from lt_cast_int_to_real 5 7 this,
-    have sqrt ↑5 < sqrt ↑7, from (real.sqrt_lt (le_cast_int_to_real 0 5 five) (le_cast_int_to_real 0 7 seven)).elim_right this,
+    have sqrt ↑5 < sqrt ↑7, from (real.sqrt_lt (le_cast_int_to_real 0 5 five)).elim_right this,
     have (sqrt ↑5 - sqrt ↑7) < 0, from sub_lt_zero.mpr this,
     by simpa only [nat.cast_bit0, nat.cast_bit1, nat.cast_one]
 ),

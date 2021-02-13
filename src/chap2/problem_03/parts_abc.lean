@@ -120,7 +120,7 @@ theorem part_b : ∀ (n k : ℕ), k ≤ n → ∃ (c : ℕ), choose n k = ↑c
 )
 | 0 k kLeN := (
     have (1:rat) = ↑1, from rfl,
-    have t1 : k = 0, from le_zero_iff_eq.mp kLeN,
+    have t1 : k = 0 := nat.le_zero_iff.mp kLeN,
     have choose 0 0 = 1, by refl,
     have choose 0 k = choose 0 0, by rw [t1],
     ⟨1, by cc⟩

@@ -1,4 +1,4 @@
-import data.real.basic
+import data.real.sqrt
 
 variables { x : ℝ }
 
@@ -289,7 +289,7 @@ begin
         right, linarith only [this]
     },
     intro h,
-    have : sqrt 16 < sqrt 21, from (real.sqrt_lt (show (0:real) ≤ 16, by norm_num) (by norm_num)).elim_right (by norm_num),
+    have : sqrt 16 < sqrt 21, from (real.sqrt_lt (show (0:real) ≤ 16, by norm_num)).elim_right (by norm_num),
     have : 4 < sqrt 21, by rwa [(show 16 = (4:real)^2, by norm_num), real.sqrt_sqr (show (0:real) ≤ 4, by norm_num)] at this,
     have helper1 : (sqrt 21 - 3) * (sqrt 21 + 3) = 12, from (
         have h1 : (0:real) <= 21, by norm_num,

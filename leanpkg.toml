@@ -1,8 +1,8 @@
 [package]
 name = "spivak-calculus"
 version = "0.1"
-lean_version = "leanprover-community/lean:3.23.0"
+lean_version = "leanprover-community/lean:3.26.0"
 path = "src"
 
 [dependencies]
-mathlib = {git = "https://github.com/leanprover-community/mathlib", rev = "140d8b42dc8167a2b3b3de61d65b07b85c3dc47d"}
+mathlib = {git = "https://github.com/leanprover-community/mathlib", rev = "d0456d3b6cd6a7002f1d629779cff82430f86f12"}

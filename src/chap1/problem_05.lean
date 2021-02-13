@@ -1,6 +1,4 @@
-
 import algebra.ordered_field
-import algebra.group_with_zero_power
 import tactic.basic
 import tactic.algebra
 import tactic.suggest
@@ -23,7 +21,7 @@ example : a < b → -b < -a :=
 assume h,
 have 0 < b - a, from sub_pos_of_lt h,
 have 0 - b < b -a -b, from sub_lt_sub_right this b,
-have 0 + -b < b + -a + -b, by assumption,
+have 0 + -b < b + -a + -b, by rwa [sub_eq_add_neg, sub_eq_add_neg, sub_eq_add_neg] at this,
 have -b < b + -b + -a, by rwa [zero_add, add_assoc, add_comm (-a), ←add_assoc] at this,
 by rwa [add_neg_self b, zero_add] at this
 

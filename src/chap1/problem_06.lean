@@ -1,5 +1,4 @@
 import algebra.ordered_field
-import algebra.group_with_zero_power
 import tactic.basic
 import tactic.suggest
 import data.int.parity

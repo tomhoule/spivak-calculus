@@ -1,6 +1,5 @@
 import algebra.ordered_field
-import algebra.group_with_zero_power
-import data.real.basic
+import data.real.sqrt
 import tactic.basic
 import tactic.suggest
 
@@ -11,14 +10,14 @@ section problem7
 variables {a b : ℝ} {n : ℕ}
 variables {apos : 0 < a} {altb : a < b}
 
-def part_1 : a < sqrt (a*b) :=
+lemma part_1 : a < sqrt (a*b) :=
 have anonneg : 0 ≤ a, from le_of_lt apos,
 have bpos : 0 < b, from lt_trans apos altb,
 have bnonneg : 0 ≤ b, from le_of_lt bpos,
 have prod_lt : a * a < a * b, from (mul_lt_mul_left apos).mpr altb,
 have asqnonneg : 0 ≤ a * a, from mul_nonneg anonneg anonneg,
 have abnonneg : 0 ≤ a * b, from mul_nonneg anonneg bnonneg,
-have final_lt : sqrt (a*a) < sqrt (a*b), from (real.sqrt_lt asqnonneg abnonneg).mpr prod_lt,
+have final_lt : sqrt (a*a) < sqrt (a*b), from (real.sqrt_lt asqnonneg).mpr prod_lt,
 have a = sqrt (a^2), from eq.symm $ real.sqrt_sqr (le_of_lt apos),
 have a = sqrt (a*a), by rwa [pow_two] at this,
 show a < sqrt (a*b), by rwa [←this] at final_lt
@@ -47,7 +46,7 @@ calc
         ... = (a^2 + b^2) - (a*b)*2 : rfl
         ... = (a^2 + b^2) - 2*(a*b) : by rwa [mul_comm]
 
-def part_2 : real.sqrt (a*b) < (a+b) / 2 :=
+lemma part_2 : real.sqrt (a*b) < (a+b) / 2 :=
 have bpos : 0 < b, from lt_trans apos altb,
 have aplusbpos : 0 < a + b, from add_pos apos bpos,
 
@@ -57,7 +56,7 @@ have l2 : ((sqrt a)^2 + (sqrt b)^2) - 2*(sqrt a * sqrt b) = a + b - 2*(sqrt a * 
 have l3 : a + b - 2*(sqrt a * sqrt b) = (sqrt a - sqrt b)^2, by rw [l1, l2],
 
 -- Prove that (sqrt a - sqrt b)^2 is positive
-have sqrt a < sqrt b, from (real.sqrt_lt (le_of_lt apos) (le_of_lt bpos)).elim_right altb,
+have sqrt a < sqrt b, from (real.sqrt_lt (le_of_lt apos)).elim_right altb,
 have (sqrt a - sqrt b) < 0, from sub_neg_of_lt this,
 have 0 < (sqrt a - sqrt b) * (sqrt a - sqrt b), from mul_pos_of_neg_of_neg this this,
 have 0 < (sqrt a - sqrt b)^2, by rwa [←pow_two] at this,
@@ -71,7 +70,7 @@ have (sqrt a * sqrt b)*2 / 2 < (a + b) / 2, by rwa [mul_comm] at this,
 have sqrt a * sqrt b < (a + b) / 2, by rwa [mul_div_cancel (sqrt a * sqrt b) two_ne_zero] at this,
 by rwa [←real.sqrt_mul (le_of_lt apos)] at this
 
-def part_3 : (a+b)/2 < b :=
+lemma part_3 : (a+b)/2 < b :=
 have beq : (b+b)/2 = b, from half_add_self b,
 have bpos : 0 < b, from lt_trans apos altb,
 have bplusbpos : 0 < b + b, from add_pos bpos bpos,

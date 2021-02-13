@@ -46,10 +46,6 @@ example : 5 - (x^2) < -2 → (real.sqrt (↑7) < abs ↑x) :=
 assume h,
 have 0 ≤ (7 : ℤ), by norm_num,
 have sevennonneg : 0 ≤ (↑7 : ℝ), from int.cast_nonneg.elim_right this,
-have absx_mul_nonneg : 0 ≤ (abs ↑x : ℝ) * abs ↑x, from (
-    have 0 ≤ (abs ↑x : ℝ), from abs_nonneg (↑x),
-    mul_nonneg this this
-),
 have 5 - (x^2) + x^2 < -2 + x^2, from add_lt_add_right h (x^2),
 have 5 < -2 + x^2, by simpa only [sub_add_cancel],
 have 2 + 5 < 2 + (-2 + x^2), from add_lt_add_left this 2,
@@ -58,7 +54,7 @@ have 7 < abs x * abs x, by rwa [pow_two, ←abs_mul_abs_self] at this,
 have ↑7 < ↑(abs x * abs x), from le_cast_int_to_real 7 (abs x * abs x) this,
 have ↑7 < ↑(abs x) * ↑(abs x), by rwa [mul_cast_self (abs x)] at this,
 have ↑7 < abs ↑x * abs ↑x, by rwa [int.cast_abs] at this,
-have real.sqrt (↑7) < real.sqrt (abs ↑x * abs ↑x), from (iff.elim_right $ real.sqrt_lt sevennonneg absx_mul_nonneg) this,
+have real.sqrt (↑7) < real.sqrt (abs ↑x * abs ↑x), from (iff.elim_right $ real.sqrt_lt sevennonneg) this,
 show real.sqrt (↑7) < abs ↑x, by rwa [real.sqrt_mul_self (abs_nonneg x)] at this
 
 -- (iv)
@@ -111,8 +107,7 @@ have (x + 1/2)^2 = x^2 + x + 1/4, by ring,
 have lr : 5/4 < (x + 1/2)^2, by linarith only [l1, this],
 have sqrtFour : sqrt 4 = 2, from (real.sqrt_eq_iff_mul_self_eq (show (0 : real) <= 4, by norm_num) (show (0 : real) <= 2, by norm_num)).elim_right (show 2*2 = (4 : real), by norm_num),
 have lNonneg : (0 : ℝ) ≤ 5/4, by norm_num,
-have rNonneg : 0 ≤ (x + 1/2)^2, from pow_two_nonneg _,
-have sqrt (5 / 4) < sqrt ((x + 1/2)^2) , by rwa [<-(real.sqrt_lt lNonneg rNonneg)] at lr,
+have sqrt (5 / 4) < sqrt ((x + 1/2)^2) , by rwa [<-(real.sqrt_lt lNonneg)] at lr,
 have sqrt 5 / sqrt 4 < abs (x+1/2), by rwa [<-real.sqrt_div (show (0 : ℝ) ≤ 5, by norm_num) 4, <-real.sqrt_sqr_eq_abs],
 have sqrt 5 / 2 < abs (x+1/2), by rwa [sqrtFour] at this,
 or.elim (le_or_gt 0 (x + 1/2))

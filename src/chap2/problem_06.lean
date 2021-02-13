@@ -1,7 +1,7 @@
 import algebra.big_operators.basic
 import data.rat.basic
 import tactic.linarith
-import ring_theory.power_series
+import ring_theory.power_series.basic
 import chap2.problem_03.binomial_theorem_golf
 
 open_locale big_operators

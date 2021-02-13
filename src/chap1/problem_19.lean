@@ -1,4 +1,4 @@
-import data.real.basic
+import data.real.sqrt
 import chap1.problem_18
 
 variables { x1 x2 y1 y2 a : ℝ }
@@ -177,7 +177,7 @@ have cPos : 0 < c, from (
 have sumXSquarePos : 0 < (x1^2 + x2^2), from (
     have l1 : 0 < (x1^2 + x2^2) * (y1^2+y2^2)⁻¹, from calc
         0   < c : cPos
-        ... = (x1^2 + x2^2) * (y1^2+y2^2)⁻¹ : division_def,
+        ... = (x1^2 + x2^2) * (y1^2+y2^2)⁻¹ : division_def (x1 ^ 2 + x2 ^ 2) (y1 ^ 2 + y2 ^ 2),
     have 0 < (y1^2+y2^2)⁻¹, from inv_pos.mpr sumYPos,
     pos_of_mul_pos_right l1 (le_of_lt this)
 ),
@@ -197,7 +197,7 @@ have helper2 : ((x1*y1+x2*y2)^2 / (y1^2+y2^2)^2) * (y1^2+y2^2)^2 = (x1*y1+x2*y2)
     ... = (x1*y1+x2*y2)^2 : by rw [mul_div_cancel _ (ne.symm $ ne_of_lt sumYSquarePos)]
 ),
 have (x1*y1+x2*y2)^2 < (x1^2 + x2^2) * (y1^2+y2^2), by rwa [<-helper1, <-helper2],
-have sqrt ((x1*y1+x2*y2)^2) < sqrt ((x1^2 + x2^2) * (y1^2+y2^2)), from (real.sqrt_lt (pow_two_nonneg (x1*y1+x2*y2)) (le_of_lt $ mul_pos sumXSquarePos sumYPos)).mpr this,
+have sqrt ((x1*y1+x2*y2)^2) < sqrt ((x1^2 + x2^2) * (y1^2+y2^2)), from (real.sqrt_lt (pow_two_nonneg (x1*y1+x2*y2))).mpr this,
 have abs (x1*y1 + x2*y2) < sqrt (x1^2 + x2^2) * sqrt (y1^2 + y2^2), by rwa [real.sqrt_sqr_eq_abs, real.sqrt_mul (le_of_lt sumXSquarePos)] at this,
 (abs_lt.elim_left this).right
 
@@ -388,10 +388,9 @@ have : (x1*y1 + x2*y2)^2 ≤ (x1*y1 + x2*y2)^2 + (x1*y2 - x2*y1)^2, from le_add_
 have : (x1*y1 + x2*y2)^2 ≤ (x1^2 + x2^2)*(y1^2 + y2^2), by rwa [←schwarz_3_aux] at this,
 
 -- Now take the sqrt of both sides.
-have leftNonneg : 0 ≤ (x1*y1 + x2*y2)^2, from pow_two_nonneg (x1 * y1 + x2 * y2),
 have rightNonneg : 0 ≤ (x1^2 + x2^2) * (y1^2 + y2^2), from mul_nonneg sumXSqNonneg sumYSqNonneg,
 
-have : sqrt ((x1*y1 + x2*y2)^2) ≤ sqrt ((x1^2 + x2^2)*(y1^2 + y2^2)), by rwa [real.sqrt_le leftNonneg rightNonneg],
+have : sqrt ((x1*y1 + x2*y2)^2) ≤ sqrt ((x1^2 + x2^2)*(y1^2 + y2^2)), by rwa [real.sqrt_le rightNonneg],
 have : abs (x1*y1 + x2*y2) ≤ sqrt (x1^2 + x2^2) * sqrt (y1^2 + y2^2), by rwa [real.sqrt_sqr_eq_abs (x1*y1 + x2*y2), real.sqrt_mul sumXSqNonneg (y1^2 + y2^2)] at this,
 
 exact (abs_le.elim_left this).right

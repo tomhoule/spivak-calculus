@@ -2,8 +2,6 @@ import data.real.basic
 import tactic.basic
 import tactic.suggest
 
-open real (sqrt)
-
 variables { x y z : ℝ }
 
 def i : abs (x*y) = abs x * abs y :=

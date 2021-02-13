@@ -1,4 +1,4 @@
-import data.real.basic
+import data.real.sqrt
 import tactic.basic
 
 variables { a b c : ℝ }

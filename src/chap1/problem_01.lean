@@ -18,13 +18,13 @@ def sq_sq_sub : a^2 - b^2 = (a - b) * (a + b) :=
 calc
     a^2 - b^2   = a * (a + b - b) - (b * (b + a - a)) : by simp only [pow_two, add_sub_cancel]
             ... = a * (a + b) + a * -b - (b * (b + a) + b * -a) : by simp only [mul_add, add_neg_cancel_right, mul_neg_eq_neg_mul_symm, add_sub_cancel]
-            ... = a * (a + b) + a * -b + -(b * (b + a) + b * -a) : rfl
+            ... = a * (a + b) + a * -b + -(b * (b + a) + b * -a) : sub_eq_add_neg (a * (a + b) + a * -b) (b * (b + a) + b * -a)
             ... = a * (a + b) + a * -b + -(b * (b + a)) + -(b * -a) : by simp only [neg_add, add_assoc]
             ... = (a + b) * a + a * -b + (a + b) * -b + b * a : by simp only [add_comm, mul_comm, mul_neg_eq_neg_mul_symm, neg_neg]
             ... = (a + b) * a + (a + b) * -b + (a * -b + a * b) : by rw [add_assoc, add_add_add_comm, mul_comm b a]
             ... = (a + b) * a + (a + b) * -b : by simp only [add_zero, mul_neg_eq_neg_mul_symm, add_left_neg]
             ... = (a + -b) * (a + b) : by rw [←mul_add (a + b), mul_comm (a + b)]
-            ... = (a - b) * (a + b) : rfl
+            ... = (a - b) * (a + b) : by rw sub_eq_add_neg
 
 -- (iii)
 def sq_eq_sq : a^2 = b^2 → a = b ∨ a = -b :=
@@ -145,10 +145,10 @@ end v
 -- (vi)
 def cube_cube_add : a^3 + b^3 = (a + b) * (a^2 - (a * b) + b^2) :=
 calc
-    a^3 + b^3   = a^3 + - -(b^3) : by rw [neg_neg]
-            ... = a^3 - -(b^3) : rfl
+    a^3 + b^3   = a^3 + - -(b^3) : by rw neg_neg
+            ... = a^3 - -(b^3) : by rw sub_eq_add_neg
             ... = a^3 - (-b)^3 : by simp only [pow_succ, neg_mul_eq_neg_mul_symm, mul_neg_eq_neg_mul_symm, neg_neg, pow_zero]
             ... = (a - (-b)) * (a^2 + a * -b + (-b)^2) : by rw [@cube_cube_sub]
             ... = (a + b) * (a^2 + a * -b + (-b)^2) : by rw sub_neg_eq_add
             ... = (a + b) * (a^2 + -(a * b) + b^2) : by simp only [mul_neg_eq_neg_mul_symm, neg_square]
-            ... = (a + b) * (a^2 - (a*b) + b^2) : rfl
+            ... = (a + b) * (a^2 - (a*b) + b^2) : by rw sub_eq_add_neg
