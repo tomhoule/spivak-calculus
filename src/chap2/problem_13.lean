@@ -3,7 +3,7 @@ import data.real.irrational
 import data.int.basic
 import ring_theory.int.basic
 
-namespace problem13
+namespace chap2problem13
 
 open real (sqrt)
 open has_dvd (dvd)
@@ -83,7 +83,7 @@ theorem sqrt5Irrational : irrational (sqrt ((5:nat):real)) := by {
   exact nat.prime.irrational_sqrt this
 }
 
-theorem sqrt6Irrational : irrational (sqrt ((6:nat):real)) := by {
+theorem sqrt6Irrational : irrational (sqrt (6:nat)) := by {
   refine @irrational_sqrt_of_multiplicity_odd 6 (by norm_num) 2 nat.prime_two _,
   suffices : (multiplicity ((2:ℕ):ℤ) 6).get (⟨1, by norm_num⟩) = 1, by { rw this, norm_num },
   unfold multiplicity,
@@ -94,11 +94,10 @@ theorem sqrt6Irrational : irrational (sqrt ((6:nat):real)) := by {
   have : n = 0, by {
     induction n with n ih, { refl },
     replace ih := nat.le_of_lt_succ nLt1,
-    rw [nat.le_zero_iff] at ih,
-    exact ih
+    exact nat.le_zero_iff.mp ih,
   },
   rw [not_not, this],
   norm_num
 }
 
-end problem13
+end chap2problem13
