@@ -39,7 +39,7 @@ have : a * (abs y0)⁻¹ < (abs y0 / 2) * ε, from (mul_inv_lt_iff h'').mpr this
 exact (mul_inv_lt_iff h').mpr this
 end
 
-def isolateε : a < (ε * (abs y0)^2) / 2 → 0 ≠ y0→ a / ((abs y0^2) / 2) < ε :=
+def isolateε : a < (ε * (abs y0)^2) / 2 → 0 ≠ y0 → a / ((abs y0^2) / 2) < ε :=
 begin
 intros h h',
 have h' : 0 < abs y0, from abs_pos.mpr (ne.symm h'),
