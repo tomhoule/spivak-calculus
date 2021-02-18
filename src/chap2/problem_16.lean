@@ -146,19 +146,54 @@ lemma mnHelper (m n : ℕ) (nPos : 0 < n): (m:real)^2 / n^2 < 2 ↔ (m:real)/n <
 }
 
 theorem c (m n : ℕ) (h₁ : (m:real) / n < sqrt 2) (nPos : 0 < n) : ∃ (m' n' : ℕ), (m:ℝ) / n < m' / n' ∧ (m':real) / n' < sqrt 2 := by {
-  have h1 : (m:real)^2 / n^2 < 2 := (mnHelper m n nPos).mpr h₁,
+  let i := (m:ℝ)^2/n^2,
+  let j := ((m:ℝ)+2*n)^2 / (m+n)^2,
+  let k := (((m:ℝ)+2*n) + 2*(m+n))^2 / (m+2*n+(m+n))^2,
+
+  rcases (le_or_gt m 0) with mNonpos | mPos,
+  { existsi 1,
+    existsi 2,
+    have : m = 0 := nat.eq_zero_of_le_zero mNonpos,
+    rw this,
+    split,
+    { norm_num },
+    rw <-mnHelper 1 2 zero_lt_two,
+    norm_num
+  },
+
+  have mPosReal : (0:ℝ) < m := nat.cast_pos.mpr mPos,
+  have nPosReal : (0:ℝ) < n := nat.cast_pos.mpr nPos,
+  have iPos : 0 < i := div_pos (pow_pos mPosReal 2) (pow_pos nPosReal 2),
+  have sumPos : 0 < m + n := add_pos mPos nPos,
+  have mAddTwoNPos : 0 < m + 2*n := by linarith,
+
+  have h1 : i < 2 := (mnHelper m n nPos).mpr h₁,
   have h2 : 2 < ((m:ℝ)+2*n)^2 / (m+n)^2 := a m n nPos h1,
-  have h3 : (((m+2*n):real)+2*(m+n))^2 / (m+2*n+(m+n))^2 < 2 := by exact_mod_cast b (m+2*n) (m+n) sorry sorry (by exact_mod_cast h2),
+  have h2' : 2 < j := h2,
+  have h2Moreover : j - 2 < 2 - i := aMoreover m n mPos nPos h1,
+  have h3 : (((m+2*n):real)+2*(m+n))^2 / (m+2*n+(m+n))^2 < 2 := by exact_mod_cast b (m+2*n) (m+n) sumPos mAddTwoNPos (by exact_mod_cast h2),
+  have h3' : k < 2 := h3,
+  have h3Moreover : 2 - (((m + 2 * n):real) ^ 2) / ↑((m + n) ^ 2) < ↑((m + 2 * n + 2 * (m + n)) ^ 2) / ↑((m + 2 * n + (m + n)) ^ 2) - 2 := by exact_mod_cast bMoreover (m+2*n) (m+n) mAddTwoNPos sumPos (by exact_mod_cast h2),
+  have h3Moreover' : 2 - j < k - 2 := by { simp only [nat.cast_bit0, nat.cast_add, nat.cast_one, nat.cast_mul, nat.cast_pow] at h3Moreover, exact h3Moreover },
   existsi (m+2*n + 2*(m+n)),
   existsi (m+2*n + (m+n)),
   split,
   {
-    have h4 : (((m:ℝ)+2*n)^2) / (m+n)^2 - 2 < 2 - (m^2/n^2) := by exact_mod_cast aMoreover m n sorry sorry h1,
-    have h5 : (((m+2*n):real)+2*(m+n))^2 / (((m+2*n):real)+(m+n))^2 - 2 > 2 - (((m:ℝ)+2*n)^2) / (m+n)^2 := by exact_mod_cast bMoreover (m+2*n) (m+n) sorry sorry (by exact_mod_cast gt_iff_lt.mpr h2),
-    -- square both sides, add -2 to both sides, then use aMoreover and bMoreover
-    sorry
+    have h4 : (((m:ℝ)+2*n)^2) / (m+n)^2 - 2 < 2 - (m^2/n^2) := by exact_mod_cast aMoreover m n mPos nPos h1,
+    have h5 : (((m+2*n):real)+2*(m+n))^2 / (((m+2*n):real)+(m+n))^2 - 2 > 2 - (((m:ℝ)+2*n)^2) / (m+n)^2 := by exact_mod_cast bMoreover (m+2*n) (m+n) mAddTwoNPos sumPos (by exact_mod_cast gt_iff_lt.mpr h2),
+    suffices : i < k, by {
+      simp only [nat.cast_bit0, nat.cast_add, nat.cast_one, nat.cast_mul],
+      nth_rewrite_lhs 0 <-real.sqrt_sqr (le_of_lt mPosReal),
+      nth_rewrite_lhs 0 <-real.sqrt_sqr (le_of_lt nPosReal),
+      rw <-real.sqrt_div (le_of_lt (pow_pos mPosReal 2)),
+      have o : 0 < ((m:ℝ) + 2 * n + 2 * (m + n)) := by linarith,
+      have o' : 0 ≤ ((m:ℝ) + 2 * n + (m + n)) := by linarith,
+      rw [<-real.sqrt_sqr (le_of_lt o), <-real.sqrt_sqr o', <-real.sqrt_div (pow_nonneg (le_of_lt o) 2)],
+      exact (real.sqrt_lt (le_of_lt iPos)).mpr this,
+    },
+    linarith
   },
-  rw [<-mnHelper _ _ sorry], exact_mod_cast h3
+  rw [<-mnHelper _ _ (show 0 < m + 2 * n + (m + n), by linarith)], exact_mod_cast h3
 }
 
 
