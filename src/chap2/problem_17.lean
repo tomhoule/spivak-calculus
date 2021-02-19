@@ -22,6 +22,11 @@ theorem a : ∀ (n : ℕ), n = 0 ∨ nat.prime n ∨ ∃ (m : multiset ℕ), n =
     sorry },
   rcases (em $ ∃ a b, a < n.succ ∧ b < n.succ ∧ a ≠ 1 ∧ b ≠ 1 ∧  n.succ = a * b) with hasFactors | hasNoFactors,
   { right,
+    obtain ⟨a, ⟨b, _⟩⟩ := hasFactors,
+    -- a is prime or has a multiset
+    -- b is prime or has a multiset,
+    -- note: we need complete induction there
+    -- existsi the primes + the multisets
     sorry -- aggregate the two multisets
   },
   left,
